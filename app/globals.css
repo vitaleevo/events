@@ -18,7 +18,7 @@
   body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    @apply text-stone-900 bg-stone-50 overflow-x-hidden;
+    @apply text-stone-900 bg-champagne overflow-x-hidden;
   }
 
   /* Haptic-like feedback for buttons on mobile */

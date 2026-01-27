@@ -6,7 +6,9 @@ const registerSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
     email: z.string().email('Invalid email address'),
     phone: z.string().optional(),
-    consent: z.any() // Temporarily simplified for build bypass
+    consent: z.boolean().refine(val => val === true, {
+        message: 'You must consent to participate'
+    })
 });
 
 export async function POST(request: Request) {
@@ -19,14 +21,14 @@ export async function POST(request: Request) {
         if (!result.success) {
             return NextResponse.json({
                 error: 'Validation failed',
-                details: result.error.errors.map(e => e.message)
+                details: result.error.issues.map((e: z.ZodIssue) => e.message)
             }, { status: 400 });
         }
 
         const { name, email, phone } = result.data;
 
         // Save to DB
-        const newSubscriber = db.add({ name, email, phone });
+        const newSubscriber = db.add({ name, email, phone: phone || '' });
 
         // Simulate delay for effect
         await new Promise((resolve) => setTimeout(resolve, 800));
