@@ -1,9 +1,14 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useConvex } from "convex/react";
 import { api } from "@/convex/_generated/api";
+
+// Chave para armazenar a sessão
+const SESSION_KEY = "admin_session_token";
+const SESSION_EXPIRY_KEY = "admin_session_expiry";
+const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 horas em milissegundos
 
 interface BackofficeProps {
   onExit: () => void;
@@ -15,11 +20,61 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
   const updateStatus = useMutation(api.registrants.updateRegistrantStatus);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const convex = useConvex();
+
+  // Verificar sessão existente ao carregar o componente
+  useEffect(() => {
+    const checkSession = () => {
+      try {
+        const sessionToken = sessionStorage.getItem(SESSION_KEY);
+        const sessionExpiry = sessionStorage.getItem(SESSION_EXPIRY_KEY);
+
+        if (sessionToken && sessionExpiry) {
+          const expiryTime = parseInt(sessionExpiry, 10);
+          if (Date.now() < expiryTime) {
+            // Sessão ainda válida
+            setIsAuthenticated(true);
+          } else {
+            // Sessão expirada, limpar
+            sessionStorage.removeItem(SESSION_KEY);
+            sessionStorage.removeItem(SESSION_EXPIRY_KEY);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
+      } finally {
+        setIsCheckingSession(false);
+      }
+    };
+
+    checkSession();
+  }, []);
+
+  // Função para criar sessão
+  const createSession = () => {
+    const token = `admin_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+    const expiry = Date.now() + SESSION_DURATION;
+    sessionStorage.setItem(SESSION_KEY, token);
+    sessionStorage.setItem(SESSION_EXPIRY_KEY, expiry.toString());
+  };
+
+  // Função para limpar sessão (logout)
+  const clearSession = () => {
+    sessionStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_EXPIRY_KEY);
+    setIsAuthenticated(false);
+  };
+
+  // Handler de saída que também limpa a sessão
+  const handleExit = () => {
+    clearSession();
+    onExit();
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +84,7 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
     try {
       const isValid = await convex.query(api.admin.verifyAdmin, { password });
       if (isValid) {
+        createSession();
         setIsAuthenticated(true);
       } else {
         setAuthError('Senha incorreta / Incorrect password');
@@ -55,10 +111,83 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
     }
   };
 
-  const handleStatusChange = async (id: any, currentStatus: string) => {
+  const [sendingWhatsApp, setSendingWhatsApp] = useState<string | null>(null);
+  const [whatsappStatus, setWhatsappStatus] = useState<{ id: string; success: boolean; message: string; url?: string } | null>(null);
+
+  // Função para enviar mensagem WhatsApp
+  const sendWhatsAppConfirmation = async (lead: any) => {
+    if (!lead.phone) {
+      setWhatsappStatus({
+        id: lead._id,
+        success: false,
+        message: "Sem número de telefone cadastrado"
+      });
+      return;
+    }
+
+    setSendingWhatsApp(lead._id);
+    try {
+      const response = await fetch('/api/whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: lead.phone,
+          name: lead.name,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        if (result.method === 'manual') {
+          // API não configurada, abrir link manualmente
+          setWhatsappStatus({
+            id: lead._id,
+            success: true,
+            message: "Clique para enviar mensagem",
+            url: result.url
+          });
+          // Abrir automaticamente em nova aba
+          window.open(result.url, '_blank');
+        } else {
+          // Mensagem enviada automaticamente via API
+          setWhatsappStatus({
+            id: lead._id,
+            success: true,
+            message: "✓ Mensagem enviada com sucesso!"
+          });
+        }
+      } else {
+        setWhatsappStatus({
+          id: lead._id,
+          success: false,
+          message: result.error || "Erro ao enviar mensagem",
+          url: result.fallbackUrl
+        });
+      }
+    } catch (error) {
+      console.error("WhatsApp send error:", error);
+      setWhatsappStatus({
+        id: lead._id,
+        success: false,
+        message: "Erro de conexão"
+      });
+    } finally {
+      setSendingWhatsApp(null);
+      // Limpar status após 5 segundos
+      setTimeout(() => setWhatsappStatus(null), 5000);
+    }
+  };
+
+  const handleStatusChange = async (id: any, currentStatus: string, lead: any) => {
     const nextStatus = currentStatus === "Pending" ? "Approved" : "Pending";
     try {
       await updateStatus({ id, status: nextStatus });
+
+      // Se aprovando, enviar mensagem WhatsApp
+      if (nextStatus === "Approved") {
+        await sendWhatsAppConfirmation(lead);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -75,6 +204,18 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
       </div>
     </div>
   );
+
+  // Mostrar loading enquanto verifica sessão
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen bg-stone-900 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold mx-auto mb-4"></div>
+          <p className="text-stone-400 text-sm">Verificando sessão...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
@@ -105,7 +246,7 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
             </button>
             <button
               type="button"
-              onClick={onExit}
+              onClick={handleExit}
               className="w-full text-stone-500 text-[10px] uppercase tracking-widest hover:text-white transition-all"
             >
               Voltar / Back
@@ -125,7 +266,7 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
           <p className="text-stone-500 text-sm mt-1">Management of high-intent wealth invitations.</p>
         </div>
         <button
-          onClick={onExit}
+          onClick={handleExit}
           className="px-8 py-3 bg-white border border-stone-200 text-stone-600 rounded-full text-xs font-bold tracking-widest hover:bg-stone-50 transition-all uppercase"
         >
           Exit Dashboard
@@ -184,21 +325,52 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
                     <p className="text-[10px] text-stone-400">{new Date(lead.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
                   </td>
                   <td className="px-8 py-6">
-                    <button
-                      onClick={() => handleStatusChange(lead._id, lead.status)}
-                      className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full transition-colors ${lead.status === 'Approved' ? 'bg-green-100 text-green-700' : 'bg-gold/10 text-gold hover:bg-gold/20'
-                        }`}
-                    >
-                      {lead.status}
-                    </button>
+                    <div className="flex flex-col gap-1">
+                      <button
+                        onClick={() => handleStatusChange(lead._id, lead.status, lead)}
+                        disabled={sendingWhatsApp === lead._id}
+                        className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full transition-colors ${lead.status === 'Approved' ? 'bg-green-100 text-green-700' : 'bg-gold/10 text-gold hover:bg-gold/20'
+                          } ${sendingWhatsApp === lead._id ? 'opacity-50 cursor-wait' : ''}`}
+                      >
+                        {sendingWhatsApp === lead._id ? (
+                          <span className="flex items-center gap-1">
+                            <i className="fa-solid fa-spinner animate-spin"></i>
+                            Enviando...
+                          </span>
+                        ) : lead.status}
+                      </button>
+                      {/* WhatsApp status feedback */}
+                      {whatsappStatus && whatsappStatus.id === lead._id && (
+                        <div className={`text-[9px] ${whatsappStatus.success ? 'text-green-600' : 'text-red-500'}`}>
+                          {whatsappStatus.url ? (
+                            <a href={whatsappStatus.url} target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">
+                              {whatsappStatus.message}
+                            </a>
+                          ) : whatsappStatus.message}
+                        </div>
+                      )}
+                    </div>
                   </td>
                   <td className="px-8 py-6">
-                    <button
-                      onClick={() => deleteLead(lead._id)}
-                      className="text-stone-300 hover:text-red-400 transition-colors text-xs"
-                    >
-                      <i className="fa-solid fa-trash-can"></i>
-                    </button>
+                    <div className="flex items-center gap-3">
+                      {/* Botão de reenviar WhatsApp (só aparece para aprovados com telefone) */}
+                      {lead.status === 'Approved' && lead.phone && (
+                        <button
+                          onClick={() => sendWhatsAppConfirmation(lead)}
+                          disabled={sendingWhatsApp === lead._id}
+                          className="text-green-500 hover:text-green-600 transition-colors text-sm"
+                          title="Reenviar confirmação WhatsApp"
+                        >
+                          <i className="fa-brands fa-whatsapp"></i>
+                        </button>
+                      )}
+                      <button
+                        onClick={() => deleteLead(lead._id)}
+                        className="text-stone-300 hover:text-red-400 transition-colors text-xs"
+                      >
+                        <i className="fa-solid fa-trash-can"></i>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               )) : (
