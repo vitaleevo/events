@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 
 export async function GET() {
     try {
-        const subscribers = db.getAll();
+        const subscribers = await db.getAll();
         return NextResponse.json(subscribers);
     } catch (error) {
         return NextResponse.json({ error: 'Failed to fetch subscribers' }, { status: 500 });
@@ -19,7 +19,7 @@ export async function DELETE(request: Request) {
             return NextResponse.json({ error: 'ID required' }, { status: 400 });
         }
 
-        db.delete(id);
+        await db.delete(id);
         return NextResponse.json({ success: true });
     } catch (error) {
         return NextResponse.json({ error: 'Failed to delete' }, { status: 500 });

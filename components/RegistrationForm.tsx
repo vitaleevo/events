@@ -3,6 +3,9 @@
 import React, { useState } from 'react';
 import { FormData } from '@/lib/types';
 import { useLanguage } from './LanguageContext';
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+
 
 interface RegistrationFormProps {
   onSuccess: () => void;
@@ -12,6 +15,7 @@ interface RegistrationFormProps {
 const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess }) => {
   /* Updated to use context */
   const { t } = useLanguage();
+  const createRegistrant = useMutation(api.registrants.createRegistrant);
   const [formData, setFormData] = useState<FormData>({
     name: '', email: '', phone: '', consent: false
   });
@@ -24,15 +28,11 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess }) => {
     setError('');
 
     try {
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+      await createRegistrant({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || undefined,
       });
-
-      if (!res.ok) {
-        throw new Error('Registration failed');
-      }
 
       onSuccess();
     } catch (err) {

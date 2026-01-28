@@ -28,7 +28,7 @@ export async function POST(request: Request) {
         const { name, email, phone } = result.data;
 
         // Save to DB
-        const newSubscriber = db.add({ name, email, phone: phone || '' });
+        const newSubscriber = await db.add({ name, email, phone: phone || '' });
 
         // Simulate delay for effect
         await new Promise((resolve) => setTimeout(resolve, 800));

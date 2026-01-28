@@ -49,7 +49,7 @@ const EventPage = () => {
     }
 
     return (
-        <div className="relative bg-stone-50 font-sans selection:bg-gold selection:text-white">
+        <div className="relative bg-champagne font-sans selection:bg-gold selection:text-white">
             <GeminiAssistant />
 
             {/* Navigation (Simple Overlay) */}

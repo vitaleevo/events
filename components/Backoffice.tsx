@@ -1,46 +1,64 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Subscription } from '@/lib/types';
+import React, { useState } from 'react';
+import { useQuery, useMutation, useConvex } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 interface BackofficeProps {
   onExit: () => void;
 }
 
 const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
-  const [leads, setLeads] = useState<Subscription[]>([]);
+  const leads = useQuery(api.registrants.listRegistrants) || [];
+  const deleteRegistrant = useMutation(api.registrants.deleteRegistrant);
+  const updateStatus = useMutation(api.registrants.updateRegistrantStatus);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  useEffect(() => {
-    fetchLeads();
-  }, []);
+  const convex = useConvex();
 
-  const fetchLeads = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+    setAuthError('');
+
     try {
-      const res = await fetch('/api/subscribers');
-      if (res.ok) {
-        const data = await res.json();
-        setLeads(data);
+      const isValid = await convex.query(api.admin.verifyAdmin, { password });
+      if (isValid) {
+        setIsAuthenticated(true);
+      } else {
+        setAuthError('Senha incorreta / Incorrect password');
       }
-    } catch (error) {
-      console.error('Failed to fetch leads', error);
+    } catch (err) {
+      setAuthError('Erro na autenticação / Auth error');
+      console.error(err);
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
-  const filteredLeads = leads.filter(lead =>
+  const filteredLeads = leads.filter((lead: any) =>
     lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     lead.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const deleteLead = async (id: string) => {
+  const deleteLead = async (id: any) => {
     try {
       if (!confirm('Are you sure you want to delete this lead?')) return;
+      await deleteRegistrant({ id });
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-      const res = await fetch(`/api/subscribers?id=${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        setLeads(leads.filter(l => l.id !== id));
-      }
+  const handleStatusChange = async (id: any, currentStatus: string) => {
+    const nextStatus = currentStatus === "Pending" ? "Approved" : "Pending";
+    try {
+      await updateStatus({ id, status: nextStatus });
     } catch (error) {
       console.error(error);
     }
@@ -57,6 +75,46 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
       </div>
     </div>
   );
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-stone-900 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-stone-800/50 backdrop-blur-xl p-10 rounded-[2.5rem] border border-gold/20 shadow-2xl">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-serif italic text-white mb-2">Admin Access</h1>
+            <p className="text-stone-400 text-xs uppercase tracking-widest">Portal do Organizador</p>
+          </div>
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div>
+              <input
+                type="password"
+                placeholder="Senha / Password"
+                className="w-full py-4 px-6 bg-stone-900/50 border border-white/10 rounded-full text-white outline-none focus:border-gold transition-all"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoFocus
+              />
+              {authError && <p className="text-red-400 text-xs mt-2 ml-4">{authError}</p>}
+            </div>
+            <button
+              type="submit"
+              disabled={isLoggingIn}
+              className="w-full py-4 bg-gold text-stone-900 rounded-full font-bold text-xs tracking-[0.2em] hover:bg-gold-dark hover:text-white transition-all uppercase disabled:opacity-50"
+            >
+              {isLoggingIn ? 'Verificando...' : 'Entrar / Enter'}
+            </button>
+            <button
+              type="button"
+              onClick={onExit}
+              className="w-full text-stone-500 text-[10px] uppercase tracking-widest hover:text-white transition-all"
+            >
+              Voltar / Back
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-champagne p-4 md:p-10 animate-fade-in">
@@ -78,7 +136,7 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         <StatCard label="Total Invitations" value={leads.length} icon="fa-users" />
         <StatCard label="Review Rate" value="94.2%" icon="fa-chart-pie" />
-        <StatCard label="Pending" value={leads.filter(l => l.status === 'Pending').length} icon="fa-clock" color="text-amber-500" />
+        <StatCard label="Pending" value={leads.filter((l: any) => l.status === 'Pending').length} icon="fa-clock" color="text-amber-500" />
       </div>
 
       {/* Main Table Area */}
@@ -109,8 +167,8 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-50">
-              {filteredLeads.length > 0 ? filteredLeads.map((lead) => (
-                <tr key={lead.id} className="hover:bg-stone-50/30 transition-colors group">
+              {filteredLeads.length > 0 ? filteredLeads.map((lead: any) => (
+                <tr key={lead._id} className="hover:bg-stone-50/30 transition-colors group">
                   <td className="px-8 py-6">
                     <p className="font-bold text-stone-800 text-sm">{lead.name}</p>
                     <p className="text-[10px] text-stone-400 uppercase tracking-tighter">Verified Private Invite</p>
@@ -126,13 +184,17 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
                     <p className="text-[10px] text-stone-400">{new Date(lead.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
                   </td>
                   <td className="px-8 py-6">
-                    <span className="px-3 py-1 bg-gold/10 text-gold text-[10px] font-bold uppercase tracking-widest rounded-full">
+                    <button
+                      onClick={() => handleStatusChange(lead._id, lead.status)}
+                      className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full transition-colors ${lead.status === 'Approved' ? 'bg-green-100 text-green-700' : 'bg-gold/10 text-gold hover:bg-gold/20'
+                        }`}
+                    >
                       {lead.status}
-                    </span>
+                    </button>
                   </td>
                   <td className="px-8 py-6">
                     <button
-                      onClick={() => deleteLead(lead.id)}
+                      onClick={() => deleteLead(lead._id)}
                       className="text-stone-300 hover:text-red-400 transition-colors text-xs"
                     >
                       <i className="fa-solid fa-trash-can"></i>

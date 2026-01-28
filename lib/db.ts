@@ -1,57 +1,63 @@
-import fs from 'fs';
-import path from 'path';
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
 import { Subscription } from './types';
 
-const DB_PATH = path.join(process.cwd(), 'data');
-const DB_FILE = path.join(DB_PATH, 'subscribers.json');
-
-// Ensure data directory exists
-if (!fs.existsSync(DB_PATH)) {
-    fs.mkdirSync(DB_PATH);
-}
-
-// Ensure db file exists
-if (!fs.existsSync(DB_FILE)) {
-    fs.writeFileSync(DB_FILE, JSON.stringify([]));
-}
+const client = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export const db = {
-    getAll: (): Subscription[] => {
+    getAll: async (): Promise<Subscription[]> => {
         try {
-            const data = fs.readFileSync(DB_FILE, 'utf-8');
-            return JSON.parse(data);
+            const registrants = await client.query(api.registrants.listRegistrants);
+            return registrants.map((r: any) => ({
+                id: r._id,
+                name: r.name,
+                email: r.email,
+                phone: r.phone || '',
+                status: r.status,
+                timestamp: r.timestamp
+            }));
         } catch (error) {
+            console.error('Failed to fetch from Convex:', error);
             return [];
         }
     },
 
-    add: (subscriber: Omit<Subscription, 'id' | 'timestamp' | 'status'>) => {
-        const current = db.getAll();
-        const newSub: Subscription = {
-            id: Math.random().toString(36).substr(2, 9),
-            timestamp: Date.now(),
-            status: 'Pending',
-            ...subscriber
-        };
-        current.push(newSub);
-        fs.writeFileSync(DB_FILE, JSON.stringify(current, null, 2));
-        return newSub;
-    },
-
-    delete: (id: string) => {
-        const current = db.getAll();
-        const updated = current.filter(s => s.id !== id);
-        fs.writeFileSync(DB_FILE, JSON.stringify(updated, null, 2));
-    },
-
-    updateStatus: (id: string, status: string) => {
-        const current = db.getAll();
-        const index = current.findIndex(s => s.id === id);
-        if (index !== -1) {
-            current[index].status = status;
-            fs.writeFileSync(DB_FILE, JSON.stringify(current, null, 2));
-            return current[index];
+    add: async (subscriber: Omit<Subscription, 'id' | 'timestamp' | 'status'>) => {
+        try {
+            const id = await client.mutation(api.registrants.createRegistrant, {
+                name: subscriber.name,
+                email: subscriber.email,
+                phone: subscriber.phone || undefined
+            });
+            return {
+                id,
+                name: subscriber.name,
+                email: subscriber.email,
+                phone: subscriber.phone || '',
+                status: 'Pending',
+                timestamp: Date.now()
+            };
+        } catch (error) {
+            console.error('Failed to add to Convex:', error);
+            throw error;
         }
-        return null;
+    },
+
+    delete: async (id: any) => {
+        try {
+            await client.mutation(api.registrants.deleteRegistrant, { id });
+        } catch (error) {
+            console.error('Failed to delete from Convex:', error);
+        }
+    },
+
+    updateStatus: async (id: any, status: string) => {
+        try {
+            await client.mutation(api.registrants.updateRegistrantStatus, { id, status });
+            return true;
+        } catch (error) {
+            console.error('Failed to update status in Convex:', error);
+            return null;
+        }
     }
 };

@@ -16,7 +16,7 @@ export async function POST(request: Request) {
             contents: message,
             config: {
                 systemInstruction: `You are a helpful assistant for the "Own Your Financial Future" Masterclass by Dr. Jonathan Vance. 
-        The event is on Feb 14, 2025. It covers mindset, investing, wealth creation, and debt management. 
+        The event is on Feb 14, 2026. It covers mindset, investing, wealth creation, and debt management. 
         Be professional, encouraging, and concise. Your goal is to help users decide to register for the free masterclass.`,
                 temperature: 0.7,
             },
