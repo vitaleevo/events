@@ -8,6 +8,12 @@ export const createRegistrant = mutation({
         phone: v.optional(v.string()),
     },
     handler: async (ctx: any, args: any) => {
+        // Check for 100 registrants limit
+        const registrants = await ctx.db.query("registrants").collect();
+        if (registrants.length >= 100) {
+            throw new Error("LIMIT_REACHED");
+        }
+
         const id = await ctx.db.insert("registrants", {
             name: args.name,
             email: args.email,

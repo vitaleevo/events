@@ -35,8 +35,12 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess }) => {
       });
 
       onSuccess();
-    } catch (err) {
-      setError(t.form.error);
+    } catch (err: any) {
+      if (err.message?.includes("LIMIT_REACHED")) {
+        setError(t.form.limit_reached);
+      } else {
+        setError(t.form.error);
+      }
     } finally {
       setLoading(false);
     }

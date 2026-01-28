@@ -15,7 +15,7 @@ export async function POST(request: Request) {
             model: 'gemini-2.0-flash-exp', // Updated model as 3 might not be avail public or use generic
             contents: message,
             config: {
-                systemInstruction: `You are a helpful assistant for the "Own Your Financial Future" Masterclass by Dr. Jonathan Vance. 
+                systemInstruction: `You are a helpful assistant for the "Own Your Financial Future" Masterclass hosted by RCCG City Church. 
         The event is on Feb 14, 2026. It covers mindset, investing, wealth creation, and debt management. 
         Be professional, encouraging, and concise. Your goal is to help users decide to register for the free masterclass.`,
                 temperature: 0.7,

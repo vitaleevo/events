@@ -31,8 +31,8 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
   useEffect(() => {
     const checkSession = () => {
       try {
-        const sessionToken = sessionStorage.getItem(SESSION_KEY);
-        const sessionExpiry = sessionStorage.getItem(SESSION_EXPIRY_KEY);
+        const sessionToken = localStorage.getItem(SESSION_KEY);
+        const sessionExpiry = localStorage.getItem(SESSION_EXPIRY_KEY);
 
         if (sessionToken && sessionExpiry) {
           const expiryTime = parseInt(sessionExpiry, 10);
@@ -41,8 +41,8 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
             setIsAuthenticated(true);
           } else {
             // Sessão expirada, limpar
-            sessionStorage.removeItem(SESSION_KEY);
-            sessionStorage.removeItem(SESSION_EXPIRY_KEY);
+            localStorage.removeItem(SESSION_KEY);
+            localStorage.removeItem(SESSION_EXPIRY_KEY);
           }
         }
       } catch (error) {
@@ -59,20 +59,27 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
   const createSession = () => {
     const token = `admin_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
     const expiry = Date.now() + SESSION_DURATION;
-    sessionStorage.setItem(SESSION_KEY, token);
-    sessionStorage.setItem(SESSION_EXPIRY_KEY, expiry.toString());
+    localStorage.setItem(SESSION_KEY, token);
+    localStorage.setItem(SESSION_EXPIRY_KEY, expiry.toString());
   };
 
   // Função para limpar sessão (logout)
   const clearSession = () => {
-    sessionStorage.removeItem(SESSION_KEY);
-    sessionStorage.removeItem(SESSION_EXPIRY_KEY);
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(SESSION_EXPIRY_KEY);
     setIsAuthenticated(false);
   };
 
   // Handler de saída que também limpa a sessão
-  const handleExit = () => {
-    clearSession();
+  const handleLogout = () => {
+    if (confirm('Deseja realmente sair? / Are you sure you want to log out?')) {
+      clearSession();
+      onExit();
+    }
+  };
+
+  // Handler para apenas voltar (reserva a sessão)
+  const handleBack = () => {
     onExit();
   };
 
@@ -246,7 +253,7 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
             </button>
             <button
               type="button"
-              onClick={handleExit}
+              onClick={handleBack}
               className="w-full text-stone-500 text-[10px] uppercase tracking-widest hover:text-white transition-all"
             >
               Voltar / Back
@@ -265,12 +272,20 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
           <h1 className="text-4xl font-medium text-stone-900 serif">Partner Portal</h1>
           <p className="text-stone-500 text-sm mt-1">Management of high-intent wealth invitations.</p>
         </div>
-        <button
-          onClick={handleExit}
-          className="px-8 py-3 bg-white border border-stone-200 text-stone-600 rounded-full text-xs font-bold tracking-widest hover:bg-stone-50 transition-all uppercase"
-        >
-          Exit Dashboard
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleBack}
+            className="px-6 py-3 text-stone-500 text-[10px] font-bold tracking-widest hover:text-stone-900 transition-all uppercase"
+          >
+            Back to Site
+          </button>
+          <button
+            onClick={handleLogout}
+            className="px-8 py-3 bg-white border border-stone-200 text-stone-600 rounded-full text-xs font-bold tracking-widest hover:bg-stone-50 transition-all uppercase"
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Stats */}

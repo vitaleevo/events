@@ -37,6 +37,8 @@ export const translations = {
             security: "256-bit Secure Encryption. No spam, ever.",
             success_title: "Access Granted",
             success_msg: "Your seat at the Own Your Financial Future Masterclass is confirmed.\nThe details have been sent to your inbox.",
+            whatsapp_btn: "Join Event WhatsApp Group",
+            whatsapp_url: "https://chat.whatsapp.com/COLAR_LINK_DO_GRUPO_AQUI", // <--- COLA O LINK DO TEU GRUPO AQUI
             back_btn: "Return to Home"
         },
         form: {
@@ -51,7 +53,8 @@ export const translations = {
             consent_post: "and understand available seats are limited.",
             submit_btn: "Secure My Spot",
             processing: "Processing...",
-            error: "Something went wrong. Please try again."
+            error: "Something went wrong. Please try again.",
+            limit_reached: "Sorry, we have reached the limit of 100 participants."
         },
         curriculum: {
             pill: "The Curriculum",
@@ -219,6 +222,8 @@ export const translations = {
             security: "Seus dados estão seguros.",
             success_title: "Acesso Confirmado",
             success_msg: "Seu lugar na Masterclass Dono do Seu Futuro Financeiro está confirmado.\nOs detalhes foram enviados para o seu email.",
+            whatsapp_btn: "Entrar no Grupo do WhatsApp",
+            whatsapp_url: "https://chat.whatsapp.com/COLAR_LINK_DO_GRUPO_AQUI", // <--- COLA O LINK DO TEU GRUPO AQUI
             back_btn: "Voltar ao Início"
         },
         form: {
@@ -233,7 +238,8 @@ export const translations = {
             consent_post: "e entendo que as vagas são limitadas.",
             submit_btn: "Garantir Meu Lugar Grátis",
             processing: "Processando...",
-            error: "Algo deu errado. Por favor, tente novamente."
+            error: "Algo deu errado. Por favor, tente novamente.",
+            limit_reached: "Desculpe, atingimos o limite de 100 participantes."
         },
         curriculum: {
             pill: "O Currículo",

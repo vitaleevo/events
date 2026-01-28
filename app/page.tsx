@@ -37,12 +37,23 @@ const EventPage = () => {
                     <p className="text-stone-300 mb-10 leading-relaxed font-light text-lg whitespace-pre-line">
                         {t.register.success_msg}
                     </p>
-                    <button
-                        onClick={() => setIsRegistered(false)}
-                        className="w-full py-5 bg-white text-stone-900 hover:bg-gold hover:text-white rounded-full font-bold tracking-[0.2em] text-sm shadow-xl transition-all duration-300 uppercase transform hover:scale-[1.02]"
-                    >
-                        {t.register.back_btn}
-                    </button>
+                    <div className="flex flex-col gap-4">
+                        <a
+                            href={t.register.whatsapp_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full py-5 bg-[#25D366] text-white hover:bg-[#128C7E] rounded-full font-bold tracking-[0.2em] text-sm shadow-xl transition-all duration-300 uppercase transform hover:scale-[1.02] flex items-center justify-center gap-3"
+                        >
+                            <i className="fa-brands fa-whatsapp text-xl"></i>
+                            {t.register.whatsapp_btn}
+                        </a>
+                        <button
+                            onClick={() => setIsRegistered(false)}
+                            className="w-full py-5 bg-white text-stone-900 hover:bg-gold hover:text-white rounded-full font-bold tracking-[0.2em] text-sm shadow-xl transition-all duration-300 uppercase transform hover:scale-[1.02]"
+                        >
+                            {t.register.back_btn}
+                        </button>
+                    </div>
                 </div>
             </div>
         );

@@ -35,7 +35,7 @@ function getConfirmationMessage(name: string): string {
 
 A sua inscrição no evento *"Own Your Financial Future - Masterclass"* foi *APROVADA*! ✅
 
-📅 *Data:* 8 de Fevereiro de 2026
+📅 *Data:* 14 de Fevereiro de 2026
 📍 *Local:* Luanda, Angola
 
 Estamos muito felizes em tê-lo(a) connosco nesta jornada de transformação financeira.
@@ -50,7 +50,7 @@ _Vitaleevo - Transformando Vidas_
 
 Your registration for *"Own Your Financial Future - Masterclass"* has been *APPROVED*! ✅
 
-📅 *Date:* February 8, 2026
+📅 *Date:* February 14, 2026
 📍 *Location:* Luanda, Angola
 
 We are very happy to have you with us on this financial transformation journey.
