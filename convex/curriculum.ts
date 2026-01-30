@@ -3,7 +3,9 @@ import { v } from "convex/values";
 
 export const listCurriculum = query({
     handler: async (ctx) => {
-        return await ctx.db.query("curriculum").withIndex("by_order").collect();
+        // Fetch all and sort in memory to avoid "index not ready" errors during dev
+        const modules = await ctx.db.query("curriculum").collect();
+        return modules.sort((a, b) => a.order - b.order);
     },
 });
 
