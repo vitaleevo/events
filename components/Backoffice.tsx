@@ -40,13 +40,18 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
   const deleteModule = useMutation(api.curriculum.deleteModule);
 
   const handleDeleteRegistrant = async (id: any) => {
-    if (!confirm(language === 'pt' ? "Tem certeza que deseja eliminar este candidato?" : "Are you sure you want to delete this registrant?")) return;
-    try {
-      await deleteRegistrant({ id });
-    } catch (error) {
-      console.error(error);
-      alert(language === 'pt' ? "Erro ao eliminar candidato." : "Error deleting registrant.");
-    }
+    confirmAction(
+      language === 'pt' ? "Tem certeza que deseja eliminar este candidato?" : "Are you sure you want to delete this registrant?",
+      async () => {
+        try {
+          await deleteRegistrant({ id });
+          showToast(language === 'pt' ? "Candidato eliminado." : "Registrant deleted.");
+        } catch (error) {
+          console.error(error);
+          showToast(language === 'pt' ? "Erro ao eliminar." : "Error deleting.", 'error');
+        }
+      }
+    );
   };
   const updateContent = useMutation(api.content.updateContent);
   const generateUploadUrl = useMutation(api.assets.generateUploadUrl);
@@ -90,6 +95,19 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
   const [heroData, setHeroData] = useState<any>(null);
   const [curriculumData, setCurriculumData] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // UI States for Notifications
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [confirmDialog, setConfirmDialog] = useState<{ show: boolean; message: string; onConfirm: () => void }>({ show: false, message: '', onConfirm: () => { } });
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
+  };
+
+  const confirmAction = (message: string, onConfirm: () => void) => {
+    setConfirmDialog({ show: true, message, onConfirm });
+  };
 
   // Curriculum Form State
   const [editingModule, setEditingModule] = useState<any | null>(null);
@@ -196,10 +214,10 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
       setAssetTitle('');
       setAssetDesc('');
       if (imageInput.current) imageInput.current.value = "";
-      alert(language === 'pt' ? "Flyer adicionado!" : "Flyer added!");
+      showToast(language === 'pt' ? "Flyer adicionado!" : "Flyer added!");
     } catch (error) {
       console.error(error);
-      alert("Error");
+      showToast("Error uploading file", 'error');
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
@@ -214,18 +232,18 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
           id: editingEvent._id,
           updates: eventFormData
         });
-        alert(language === 'pt' ? "Evento atualizado!" : "Event updated!");
+        showToast(language === 'pt' ? "Evento atualizado!" : "Event updated!");
       } else {
         await createEvent({
           ...eventFormData,
           slug: eventFormData.slug || `event-${Date.now()}`
         });
-        alert(language === 'pt' ? "Evento criado!" : "Event created!");
+        showToast(language === 'pt' ? "Evento criado!" : "Event created!");
       }
       setIsEventFormOpen(false);
       setEditingEvent(null);
     } catch (error) {
-      alert("Error");
+      showToast("Error saving event", 'error');
     }
   };
 
@@ -265,10 +283,10 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
     setIsSaving(true);
     try {
       await updateContent({ key, data });
-      alert(language === 'pt' ? "Conteúdo atualizado!" : "Content updated!");
+      showToast(language === 'pt' ? "Conteúdo atualizado!" : "Content updated!");
     } catch (error) {
       console.error(error);
-      alert("Error");
+      showToast("Error updating content", 'error');
     } finally {
       setIsSaving(false);
     }
@@ -285,7 +303,7 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
           icon: moduleForm.icon,
           order: moduleForm.order
         });
-        alert("Module Updated");
+        showToast("Module Updated");
       } else {
         await createModule({
           title: moduleForm.title,
@@ -293,12 +311,12 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
           icon: moduleForm.icon,
           order: curriculumList.length + 1
         });
-        alert("Module Created");
+        showToast("Module Created");
       }
       setIsModuleModalOpen(false);
       setEditingModule(null);
     } catch (err) {
-      alert("Error saving module");
+      showToast("Error saving module", 'error');
     }
   };
 
@@ -439,7 +457,12 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
                     <h3 className="font-bold text-stone-800">{event.title}</h3>
                     <p className="text-[10px] text-stone-400 uppercase tracking-widest">{new Date(event.date).toLocaleDateString()} {language === 'pt' ? 'às' : 'at'} {event.time}</p>
                   </div>
-                  <button onClick={() => { if (confirm(language === 'pt' ? "Apagar?" : "Delete?")) deleteEvent({ id: event._id }) }} className="text-stone-200 hover:text-red-500"><i className="fa-solid fa-trash"></i></button>
+                  <button onClick={() => {
+                    confirmAction(
+                      language === 'pt' ? "Apagar evento?" : "Delete event?",
+                      () => deleteEvent({ id: event._id })
+                    )
+                  }} className="text-stone-200 hover:text-red-500"><i className="fa-solid fa-trash"></i></button>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-[10px] font-bold uppercase">
@@ -515,7 +538,13 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
                     <Image src={asset.fileUrl} alt={asset.title} fill unoptimized className="object-cover" />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
                       <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-stone-900"><i className="fa-solid fa-eye"></i></div>
-                      <button onClick={(e) => { e.stopPropagation(); if (confirm(language === 'pt' ? "Apagar?" : "Delete?")) deleteAsset({ id: asset._id }) }} className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white"><i className="fa-solid fa-trash"></i></button>
+                      <button onClick={(e) => {
+                        e.stopPropagation();
+                        confirmAction(
+                          language === 'pt' ? "Apagar flyer?" : "Delete flyer?",
+                          () => deleteAsset({ id: asset._id })
+                        )
+                      }} className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white"><i className="fa-solid fa-trash"></i></button>
                     </div>
                   </div>
                   <h4 className="font-bold text-stone-800 text-sm px-2">{asset.title}</h4>
@@ -549,7 +578,9 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
 
                 <div className="flex gap-2 pt-4 border-t border-stone-50">
                   <button onClick={() => openModuleModal(item)} className="flex-1 py-2 bg-stone-50 text-stone-600 rounded-lg text-[10px] font-bold uppercase hover:bg-stone-100">Edit</button>
-                  <button onClick={() => { if (confirm('Delete?')) deleteModule({ id: item._id }) }} className="w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all"><i className="fa-solid fa-trash"></i></button>
+                  <button onClick={() => {
+                    confirmAction('Delete module?', () => deleteModule({ id: item._id }))
+                  }} className="w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all"><i className="fa-solid fa-trash"></i></button>
                 </div>
               </div>
             ))}
@@ -722,6 +753,39 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
                   <button type="submit" className="flex-1 py-3 bg-stone-900 text-white rounded-xl text-xs font-bold uppercase shadow-lg hover:bg-gold transition-all">Save</button>
                 </div>
               </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {/* Custom Toast Notification */}
+      <AnimatePresence>
+        {toast.show && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: 50, x: '-50%' }}
+            className={`fixed bottom-10 left-1/2 transform -translate-x-1/2 z-[200] px-8 py-4 rounded-full shadow-2xl flex items-center gap-4 border ${toast.type === 'success' ? 'bg-stone-900 border-gold/50 text-white' : 'bg-red-500 border-red-400 text-white'}`}
+          >
+            <i className={`fa-solid ${toast.type === 'success' ? 'fa-circle-check text-gold' : 'fa-circle-exclamation'}`}></i>
+            <span className="text-xs font-bold uppercase tracking-widest">{toast.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom Confirmation Modal */}
+      <AnimatePresence>
+        {confirmDialog.show && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[200] bg-stone-900/60 backdrop-blur-md flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-white p-8 rounded-[2rem] shadow-2xl max-w-sm w-full text-center border border-stone-100">
+              <div className="w-16 h-16 bg-gold/10 text-gold rounded-full flex items-center justify-center mx-auto mb-6 text-2xl">
+                <i className="fa-solid fa-question"></i>
+              </div>
+              <h3 className="text-xl font-serif italic text-stone-800 mb-2">{language === 'pt' ? 'Tem a certeza?' : 'Are you sure?'}</h3>
+              <p className="text-stone-500 text-sm mb-8">{confirmDialog.message}</p>
+              <div className="flex gap-4">
+                <button onClick={() => setConfirmDialog({ ...confirmDialog, show: false })} className="flex-1 py-3 text-stone-400 uppercase text-[10px] font-bold tracking-widest hover:bg-stone-50 rounded-xl transition-colors">{language === 'pt' ? 'Cancelar' : 'Cancel'}</button>
+                <button onClick={() => { confirmDialog.onConfirm(); setConfirmDialog({ ...confirmDialog, show: false }); }} className="flex-1 py-3 bg-stone-900 text-white uppercase text-[10px] font-bold tracking-widest rounded-xl hover:bg-gold transition-colors shadow-lg shadow-stone-900/10">{language === 'pt' ? 'Confirmar' : 'Confirm'}</button>
+              </div>
             </motion.div>
           </motion.div>
         )}
