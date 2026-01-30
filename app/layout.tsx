@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
+import { LanguageProvider } from "@/components/LanguageContext";
 
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -24,7 +25,9 @@ export default function RootLayout({
             </head>
             <body className={`${inter.variable} ${playfair.variable} font-sans bg-champagne text-stone-900 antialiased`}>
                 <ConvexClientProvider>
-                    {children}
+                    <LanguageProvider>
+                        {children}
+                    </LanguageProvider>
                 </ConvexClientProvider>
             </body>
         </html>

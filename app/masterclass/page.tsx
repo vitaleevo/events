@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { LanguageProvider, useLanguage } from '@/components/LanguageContext';
+import { useLanguage } from '@/components/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import Countdown from '@/components/Countdown';
 import RegistrationForm from '@/components/RegistrationForm';
@@ -234,8 +234,6 @@ const EventPage = () => {
 
 export default function Home() {
     return (
-        <LanguageProvider>
-            <EventPage />
-        </LanguageProvider>
+        <EventPage />
     );
 }

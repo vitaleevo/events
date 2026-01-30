@@ -8,8 +8,6 @@ export default function AdminPage() {
     const router = useRouter();
 
     return (
-        <LanguageProvider>
-            <Backoffice onExit={() => router.push('/')} />
-        </LanguageProvider>
+        <Backoffice onExit={() => router.push('/')} />
     );
 }

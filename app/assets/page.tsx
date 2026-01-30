@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useLanguage, LanguageProvider } from '@/components/LanguageContext';
+import { useLanguage } from '@/components/LanguageContext';
 
 const AssetsPage = () => {
     const { t, language } = useLanguage();
@@ -164,8 +164,6 @@ const AssetsPage = () => {
 
 export default function Assets() {
     return (
-        <LanguageProvider>
-            <AssetsPage />
-        </LanguageProvider>
+        <AssetsPage />
     );
 }
