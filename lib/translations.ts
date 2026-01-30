@@ -425,6 +425,35 @@ export const translations = {
                 }
             ]
         },
+        faq: {
+            title: "Esclarecimentos",
+            items: [
+                {
+                    question: "Esta masterclass é realmente gratuita?",
+                    answer: "Sim, 100%. Acreditamos que a educação financeira deve ser acessível. Não há custo para participar."
+                },
+                {
+                    question: "Preciso de conhecimento financeiro prévio?",
+                    answer: "De jeito nenhum. Projetamos isso para levá-lo do básico às estratégias avançadas de maneira clara e passo a passo."
+                },
+                {
+                    question: "Receberei um certificado?",
+                    answer: "Sim, todos os participantes receberão um Certificado de Conclusão digital."
+                },
+                {
+                    question: "Quanto tempo dura o treinamento?",
+                    answer: "A sessão dura aproximadamente 120 minutos, incluindo uma seção dedicada de perguntas e respostas no final."
+                },
+                {
+                    question: "Como acesso o evento?",
+                    answer: "É um evento presencial no Auditório da RCCG City Church, Luanda. Registre-se para garantir seu lugar."
+                },
+                {
+                    question: "Há estacionamento disponível?",
+                    answer: "Sim, há amplo espaço de estacionamento disponível nas instalações da igreja."
+                }
+            ]
+        },
         final_cta: {
             tag: "A Chamada Final",
             title_prefix: "Redefina Seu",
@@ -439,8 +468,8 @@ export const translations = {
             link_privacy: "Política de Privacidade",
             link_terms: "Termos de Uso",
             col_connect: "Conectar",
-            rights: "© 2026 RCCG City Church. Todos os Direitos Reservados.",
-            tagline: "Excelência no Ministério"
+            rights: "© 2026 Marcus Banjo. Todos os Direitos Reservados.",
+            tagline: "WealthSprings Accelerator"
         },
         assistant: {
             welcome: "Bem-vindo. Como posso ajudá-lo com os detalhes do evento?",

@@ -20,7 +20,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess, eventId 
   const eventBySlug = useQuery(api.events.getEventBySlug, !eventId ? { slug: "masterclass-2026" } : "skip" as any);
   const activeEvent = useQuery(api.events.getActiveEvent);
 
-  const event = eventById || eventBySlug || activeEvent;
+  // Resilience: prioritize the specific event, but fallback to any active one to avoid "Coming Soon" if data is slightly different
+  const event = eventById !== undefined ? eventById : (eventBySlug !== undefined ? (eventBySlug || activeEvent) : undefined);
 
   // 2. Fetch Registrant Count for this event
   const currentCount = useQuery(api.registrants.getRegistrantCount, event ? { eventId: event._id } : "skip" as any) ?? 0;

@@ -16,11 +16,12 @@ const EventPage = () => {
     const [scrolled, setScrolled] = useState(false);
 
     // Fetch Event Data from Convex (Primary source for event details)
-    // We try the slug, but if that fails, we fallback to the first active event
+    // We try the slug "masterclass-2026", but in production we fallback to the first active event found
     const eventBySlug = useQuery(api.events.getEventBySlug, { slug: "masterclass-2026" });
     const activeEvent = useQuery(api.events.getActiveEvent);
 
-    const event = eventBySlug || activeEvent;
+    // Resilience: use slug if found, or any active event, otherwise null
+    const event = eventBySlug !== undefined ? (eventBySlug || activeEvent) : undefined;
 
     // Convex Content Management - Real-time updates for texts
     const remoteHero = useQuery(api.content.getContent, { key: "hero" });
