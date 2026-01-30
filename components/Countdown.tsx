@@ -2,12 +2,27 @@
 import React, { useState, useEffect } from 'react';
 import { EVENT_DATE } from '@/lib/constants';
 import { useLanguage } from './LanguageContext';
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 const Countdown: React.FC = () => {
-  /* Updated to calculate immediately */
+  const { t } = useLanguage();
+
+  // Fetch source of truth from Event Database
+  const eventBySlug = useQuery(api.events.getEventBySlug, { slug: "masterclass-2026" });
+  const activeEvent = useQuery(api.events.getActiveEvent);
+  const event = eventBySlug !== undefined ? (eventBySlug || activeEvent) : undefined;
+
+  /* Updated to calculate from dynamic event date */
   const calculateTimeLeft = () => {
+    if (!event?.date) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+
+    // Use the event date and time from Backoffice
+    // We add 12:00:00 to date if time is missing to avoid timezone issues
+    const eventDateTime = new Date(`${event.date}T${event.time || '10:00:00'}`);
     const now = new Date().getTime();
-    const distance = EVENT_DATE.getTime() - now;
+    const distance = eventDateTime.getTime() - now;
+
     if (distance < 0) {
       return { days: 0, hours: 0, minutes: 0, seconds: 0 };
     }
@@ -22,17 +37,17 @@ const Countdown: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
-    /* Update immediately on mount */
+    /* Update immediately on mount and when event data changes */
     setTimeLeft(calculateTimeLeft());
 
     const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft());
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [event]);
 
   /* Updated to use context */
-  const { t } = useLanguage();
+
   const TimeUnit = ({ value, labelKey }: { value: number, labelKey: keyof typeof t.countdown }) => (
     <div className="flex flex-col items-center mx-4 md:mx-6 group cursor-default">
       <div className="text-fluid-xl md:text-fluid-2xl font-light text-white serif italic group-hover:text-gold transition-colors duration-500">

@@ -15,28 +15,53 @@ const EventPage = () => {
     const [isRegistered, setIsRegistered] = useState(false);
     const [scrolled, setScrolled] = useState(false);
 
-    // Fetch Event Data from Convex (Primary source for event details)
-    // We try the slug "masterclass-2026", but in production we fallback to the first active event found
+    // Parallax & Scroll effect
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 50);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // 1. Fetch Event Data (Centralized for date/time/location)
     const eventBySlug = useQuery(api.events.getEventBySlug, { slug: "masterclass-2026" });
     const activeEvent = useQuery(api.events.getActiveEvent);
-
-    // Resilience: use slug if found, or any active event, otherwise null
     const event = eventBySlug !== undefined ? (eventBySlug || activeEvent) : undefined;
 
-    // Convex Content Management - Real-time updates for texts
+    // 2. Fetch CMS Content (Titles and Pillars)
     const remoteHero = useQuery(api.content.getContent, { key: "hero" });
     const remoteCurriculum = useQuery(api.content.getContent, { key: "curriculum" });
 
-    // Fallback logic for content
+    // 3. Merge Logic: CMS provides the 'Style', Event provides the 'Facts'
     const hero = remoteHero?.data || t.hero;
     const curriculum = remoteCurriculum?.data || t.curriculum;
 
-    // Fully dynamic fields from Event Management
-    const displayTitle = event?.title || hero.title_prefix;
-    const displayDescription = event?.description || hero.subtitle;
-    const displayLocation = event?.location || hero.location_val;
-    const displayDate = event?.date ? new Date(event.date + 'T12:00:00').toLocaleDateString(language === 'pt' ? 'pt-PT' : 'en-US', { day: '2-digit', month: 'long', year: 'numeric' }) : hero.date_val;
-    const displayTime = event?.time || hero.time_val;
+    // THE SOURCE OF TRUTH (Always from the Event created in Backoffice)
+    const displayDate = event?.date
+        ? new Date(event.date + 'T12:00:00').toLocaleDateString(language === 'pt' ? 'pt-PT' : 'en-US', { day: '2-digit', month: 'long', year: 'numeric' })
+        : t.hero.date_val;
+    const displayTime = event?.time || t.hero.time_val;
+    const displayLocation = event?.location || t.hero.location_val;
+
+    // Dynamic Tag Logic
+    // Formats date to "FEB 14" or "14 FEV"
+    const tagDate = event?.date
+        ? new Date(event.date + 'T12:00:00').toLocaleDateString(language === 'pt' ? 'pt-PT' : 'en-US', { day: 'numeric', month: 'short' }).toUpperCase().replace(/\./g, '')
+        : null;
+
+    // Use the tag from CMS (Backoffice) as the label. 
+    // We only split if there's already a separator, to avoid duplicating the date.
+    // Otherwise, we use exactly what the user typed (e.g., "Live Event").
+    const rawTag = hero.tag || "";
+    const tagLabel = rawTag.includes('•') ? rawTag.split('•')[0].trim() : rawTag;
+
+    // Combine the user's label with the dynamic database date
+    const displayTag = tagDate ? `${tagLabel} • ${tagDate}` : rawTag;
+
+    // Title and Description come from Site Content (CMS)
+    const displayTitle = hero.title_prefix;
+    const displaySubtitle = hero.subtitle;
 
     // Parallax & Scroll effect
     useEffect(() => {
@@ -104,7 +129,7 @@ const EventPage = () => {
                     <div className="lg:col-span-7 text-center lg:text-left space-y-10 animate-fade-in">
                         <div className="inline-flex items-center gap-3 border border-white/10 bg-white/5 backdrop-blur-sm rounded-full px-4 py-2">
                             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                            <span className="text-gold font-bold tracking-[0.2em] text-[10px] uppercase">{hero.tag}</span>
+                            <span className="text-gold font-bold tracking-[0.2em] text-[10px] uppercase">{displayTag}</span>
                         </div>
 
                         <h1 className="text-fluid-3xl md:text-fluid-4xl font-medium text-white leading-[1.05] serif tracking-tight">
@@ -119,7 +144,7 @@ const EventPage = () => {
                         </h1>
 
                         <p className="text-lg md:text-xl text-stone-300 font-light leading-relaxed max-w-xl mx-auto lg:mx-0">
-                            {displayDescription}
+                            {displaySubtitle}
                         </p>
 
                         <div className="flex flex-col md:flex-row gap-8 items-center justify-center lg:justify-start pt-4 text-white/80">

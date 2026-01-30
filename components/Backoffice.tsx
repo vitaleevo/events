@@ -496,18 +496,13 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
                 <label className="text-[9px] font-bold uppercase tracking-[0.3em] text-stone-400 mb-3 block">{t.backoffice.content_subtitle_label}</label>
                 <textarea className="w-full p-4 bg-stone-50 border border-stone-100 rounded-xl outline-none focus:border-gold text-sm h-32" value={heroData?.subtitle || ""} onChange={(e) => setHeroData({ ...heroData, subtitle: e.target.value })} />
               </div>
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className="text-[9px] font-bold uppercase tracking-[0.3em] text-stone-400 mb-3 block">{t.backoffice.content_location_label}</label>
-                  <input type="text" className="w-full p-4 bg-stone-50 border border-stone-100 rounded-xl outline-none focus:border-gold text-sm" value={heroData?.location_val || ""} onChange={(e) => setHeroData({ ...heroData, location_val: e.target.value })} />
-                </div>
-                <div>
-                  <label className="text-[9px] font-bold uppercase tracking-[0.3em] text-stone-400 mb-3 block">{t.backoffice.content_date_time_label}</label>
-                  <div className="flex gap-2">
-                    <input type="text" className="flex-1 p-4 bg-stone-50 border border-stone-100 rounded-xl outline-none focus:border-gold text-sm" value={heroData?.date_val || ""} onChange={(e) => setHeroData({ ...heroData, date_val: e.target.value })} />
-                    <input type="text" className="w-24 p-4 bg-stone-50 border border-stone-100 rounded-xl outline-none focus:border-gold text-sm" value={heroData?.time_val || ""} onChange={(e) => setHeroData({ ...heroData, time_val: e.target.value })} />
-                  </div>
-                </div>
+              <div className="border-t pt-6 bg-stone-50/50 p-6 rounded-2xl">
+                <p className="text-[10px] text-stone-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <i className="fa-solid fa-circle-info text-gold"></i>
+                  {language === 'pt'
+                    ? "As datas, horas e local são agora geridos automaticamente através do menu 'Eventos'."
+                    : "Dates, times, and location are now managed automatically via the 'Events' menu."}
+                </p>
               </div>
             </div>
           </div>
