@@ -28,22 +28,40 @@ export const getEventBySlug = query({
     args: { slug: v.string() },
     handler: async (ctx, args) => {
         if (!args.slug) return null;
-        // Using filter instead of specific index temporarily to avoid "Server Error" 
-        // if index isn't ready in production
-        return await ctx.db
-            .query("events")
-            .filter((q) => q.eq(q.field("slug"), args.slug))
-            .first();
+
+        try {
+            // Preferred method: use the index for speed and efficiency
+            return await ctx.db
+                .query("events")
+                .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+                .first();
+        } catch (error) {
+            // Fallback: use filter if the index isn't ready or missing in production
+            console.error("getEventBySlug fallback to filter:", error);
+            return await ctx.db
+                .query("events")
+                .filter((q) => q.eq(q.field("slug"), args.slug))
+                .first();
+        }
     },
 });
 
 export const getActiveEvent = query({
     handler: async (ctx) => {
-        // Return the first open event, or the latest upcoming one
-        return await ctx.db
-            .query("events")
-            .filter((q) => q.eq(q.field("isOpen"), true))
-            .first();
+        try {
+            // Try using the open index
+            return await ctx.db
+                .query("events")
+                .withIndex("by_open", (q) => q.eq("isOpen", true))
+                .first();
+        } catch (error) {
+            // Fallback to filter
+            console.error("getActiveEvent fallback to filter:", error);
+            return await ctx.db
+                .query("events")
+                .filter((q) => q.eq(q.field("isOpen"), true))
+                .first();
+        }
     },
 });
 

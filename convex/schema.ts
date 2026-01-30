@@ -38,5 +38,5 @@ export default defineSchema({
         isOpen: v.boolean(),
         slug: v.string(), // e.g. 'masterclass-2026'
         status: v.string(), // 'upcoming', 'ongoing', 'completed'
-    }).index("by_slug", ["slug"]),
+    }).index("by_slug", ["slug"]).index("by_open", ["isOpen"]),
 });
