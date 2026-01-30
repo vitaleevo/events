@@ -84,6 +84,7 @@ export const updateEvent = mutation({
             maxRegistrants: v.optional(v.number()),
             isOpen: v.optional(v.boolean()),
             status: v.optional(v.string()),
+            slug: v.optional(v.string()),
         }),
     },
     handler: async (ctx, args) => {

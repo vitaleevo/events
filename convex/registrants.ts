@@ -16,7 +16,7 @@ export const createRegistrant = mutation({
             if (!event.isOpen) throw new Error("EVENT_CLOSED");
 
             const count = (await ctx.db.query("registrants")
-                .filter((q: any) => q.eq(q.field("eventId"), args.eventId))
+                .withIndex("by_event", (q: any) => q.eq("eventId", args.eventId))
                 .collect()).length;
 
             if (count >= event.maxRegistrants) {
@@ -54,7 +54,7 @@ export const getRegistrantCount = query({
     handler: async (ctx, args) => {
         const registrants = await ctx.db
             .query("registrants")
-            .filter((q: any) => q.eq(q.field("eventId"), args.eventId))
+            .withIndex("by_event", (q) => q.eq("eventId", args.eventId))
             .collect();
         return registrants.length;
     },
