@@ -11,6 +11,9 @@ const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfa
 export const metadata: Metadata = {
     title: "WealthSprings Accelerator | Own Your Financial Future",
     description: "Exclusive Masterclass on Financial Intelligence and Wealth Creation with Marcus Banjo.",
+    icons: {
+        icon: "/favicon.png",
+    },
 };
 
 export default function RootLayout({
@@ -22,6 +25,7 @@ export default function RootLayout({
         <html lang="en" className="scroll-smooth">
             <head>
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+                <link rel="icon" href="/favicon.png" />
             </head>
             <body className={`${inter.variable} ${playfair.variable} font-sans bg-champagne text-stone-900 antialiased`}>
                 <ConvexClientProvider>

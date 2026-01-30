@@ -27,10 +27,11 @@ export const listEvents = query({
 export const getEventBySlug = query({
     args: { slug: v.string() },
     handler: async (ctx, args) => {
+        if (!args.slug) return null;
         return await ctx.db
             .query("events")
             .withIndex("by_slug", (q) => q.eq("slug", args.slug))
-            .unique();
+            .first();
     },
 });
 
