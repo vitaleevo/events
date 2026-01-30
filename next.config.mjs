@@ -9,6 +9,10 @@ const nextConfig = {
             {
                 protocol: 'https',
                 hostname: 'picsum.photos',
+            },
+            {
+                protocol: 'https',
+                hostname: 'dashing-bobcat-713.convex.cloud',
             }
         ]
     },

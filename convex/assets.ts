@@ -11,6 +11,8 @@ export const saveAsset = mutation({
         description: v.optional(v.string()),
         storageId: v.id("_storage"),
         type: v.string(),
+        eventId: v.optional(v.id("events")),
+        previewUrl: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
         const fileUrl = (await ctx.storage.getUrl(args.storageId))!;
@@ -19,9 +21,22 @@ export const saveAsset = mutation({
             description: args.description,
             storageId: args.storageId,
             fileUrl: fileUrl,
+            previewUrl: args.previewUrl || fileUrl,
+            eventId: args.eventId,
             type: args.type,
             timestamp: Date.now(),
         });
+    },
+});
+
+export const listAssetsByEvent = query({
+    args: { eventId: v.id("events") },
+    handler: async (ctx, args) => {
+        return await ctx.db
+            .query("assets")
+            .withIndex("by_event", (q) => q.eq("eventId", args.eventId))
+            .order("desc")
+            .collect();
     },
 });
 

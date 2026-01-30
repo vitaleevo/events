@@ -1,21 +1,30 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FormData } from '@/lib/types';
 import { useLanguage } from './LanguageContext';
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-
 
 interface RegistrationFormProps {
   onSuccess: () => void;
-  className?: string; // Kept for compatibility but mostly unused
+  eventId?: any; // ID of the specific event
 }
 
-const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess }) => {
-  /* Updated to use context */
-  const { t } = useLanguage();
+const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess, eventId }) => {
+  const { t, language } = useLanguage();
   const createRegistrant = useMutation(api.registrants.createRegistrant);
+
+  // 1. Fetch Event (Try by ID, then Slug, then Get Active)
+  const eventById = useQuery(api.events.getEventById, eventId ? { id: eventId } : "skip" as any);
+  const eventBySlug = useQuery(api.events.getEventBySlug, !eventId ? { slug: "masterclass-2026" } : "skip" as any);
+  const activeEvent = useQuery(api.events.getActiveEvent);
+
+  const event = eventById || eventBySlug || activeEvent;
+
+  // 2. Fetch Registrant Count for this event
+  const currentCount = useQuery(api.registrants.getRegistrantCount, event ? { eventId: event._id } : "skip" as any) ?? 0;
+
   const [formData, setFormData] = useState<FormData>({
     name: '', email: '', phone: '', consent: false
   });
@@ -32,12 +41,15 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess }) => {
         name: formData.name,
         email: formData.email,
         phone: formData.phone || undefined,
+        eventId: event?._id,
       });
 
       onSuccess();
     } catch (err: any) {
       if (err.message?.includes("LIMIT_REACHED")) {
         setError(t.form.limit_reached);
+      } else if (err.message?.includes("EVENT_CLOSED")) {
+        setError(language === 'pt' ? "As inscrições estão fechadas." : "Registration is closed.");
       } else {
         setError(t.form.error);
       }
@@ -47,6 +59,60 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess }) => {
   };
 
   const inputClasses = "w-full px-0 py-3 bg-transparent border-b border-white/20 focus:border-gold outline-none transition-all duration-300 placeholder:text-stone-500 text-white font-light focus:pl-2";
+
+  // --- BUSINESS RULES CHECK ---
+
+  // A. Date Expired Check
+  const isExpired = event && new Date(`${event.date}T${event.time || '23:59'}`) < new Date();
+
+  // B. Manual Close Check
+  const isClosedManually = event && !event.isOpen;
+
+  // C. Limit Check
+  const isLimitReached = event && currentCount >= event.maxRegistrants;
+
+  // D. Event Missing? 
+  if (event === undefined) return <div className="p-10 text-center text-stone-500">{t.form.loading_form}</div>;
+
+  // E. Decision: Is Available?
+  const isAvailable = event && event.isOpen && !isExpired && !isLimitReached;
+
+  if (!isAvailable) {
+    let title = t.form.status_closed_title;
+    let message = t.form.status_closed_msg;
+    let icon = "fa-calendar-xmark";
+
+    if (isExpired) {
+      title = t.form.status_expired_title;
+      message = t.form.status_expired_msg;
+      icon = "fa-hourglass-end";
+    } else if (isLimitReached) {
+      title = t.form.status_full_title;
+      message = t.form.status_full_msg;
+      icon = "fa-users-slash";
+    } else if (isClosedManually) {
+      title = t.form.status_unavailable_title;
+      message = t.form.status_unavailable_msg;
+      icon = "fa-lock";
+    } else if (!event) {
+      title = t.form.status_soon_title;
+      message = t.form.status_soon_msg;
+      icon = "fa-clock";
+    }
+
+    return (
+      <div className="p-8 bg-black/40 backdrop-blur-md border border-red-500/20 rounded-[2rem] text-center animate-fade-in shadow-2xl">
+        <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl border border-red-500/20 shadow-lg shadow-red-500/5">
+          <i className={`fa-solid ${icon}`}></i>
+        </div>
+        <h3 className="text-white font-serif italic text-2xl mb-2">{title}</h3>
+        <p className="text-stone-400 text-sm leading-relaxed mb-6">{message}</p>
+        <div className="pt-6 border-t border-white/5">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-gold font-bold">{t.form.status_footer}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

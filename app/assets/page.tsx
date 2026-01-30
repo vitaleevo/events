@@ -1,14 +1,17 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useLanguage, LanguageProvider } from '@/components/LanguageContext';
 
 const AssetsPage = () => {
+    const { t, language } = useLanguage();
     const [selectedImage, setSelectedImage] = useState<any | null>(null);
+    const [showRegisterPrompt, setShowRegisterPrompt] = useState(false);
     const remoteAssets = useQuery(api.assets.listAssets) || [];
 
     // Static fallback if no assets in DB
@@ -62,6 +65,11 @@ const AssetsPage = () => {
         link.download = `WealthSprings_${asset.title.replace(/\s+/g, '_')}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
+
+        // Show registration prompt after a few seconds if they downloaded/viewed
+        setTimeout(() => {
+            setShowRegisterPrompt(true);
+        }, 5000);
     };
 
     return (
@@ -96,7 +104,7 @@ const AssetsPage = () => {
                 <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
                     {displayAssets.map((asset: any, idx) => (
                         <motion.div key={idx} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * idx }} className="group">
-                            <div onClick={() => setSelectedImage(asset)} className="relative aspect-[3/4] w-full rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-stone-900 mb-4 cursor-zoom-in active:scale-95 transition-transform duration-300">
+                            <div onClick={() => { setSelectedImage(asset); handleDownload(asset); }} className="relative aspect-[3/4] w-full rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-stone-900 mb-4 cursor-zoom-in active:scale-95 transition-transform duration-300">
                                 <Image src={asset.fileUrl} alt={asset.title} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
                                 <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-transparent opacity-80"></div>
                                 <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end">
@@ -114,6 +122,20 @@ const AssetsPage = () => {
                     ))}
                 </div>
             </section>
+
+            {/* Registration Prompt Popup */}
+            <AnimatePresence>
+                {showRegisterPrompt && (
+                    <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] w-[90%] max-w-md bg-white p-8 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-stone-200 text-center">
+                        <button onClick={() => setShowRegisterPrompt(false)} className="absolute top-4 right-4 text-stone-400 hover:text-stone-900"><i className="fa-solid fa-xmark"></i></button>
+                        <h3 className="text-stone-900 font-serif italic text-2xl mb-2">{language === 'pt' ? 'Já Garantiu sua Vaga?' : 'Have You Secured Your Spot?'}</h3>
+                        <p className="text-stone-500 text-sm mb-6">{language === 'pt' ? 'Não perca a oportunidade de participar deste evento transformador.' : 'Don\'t miss the opportunity to participate in this transformative event.'}</p>
+                        <Link href="/masterclass" className="inline-block w-full py-4 bg-gold text-white rounded-full font-bold uppercase tracking-widest text-xs shadow-lg shadow-gold/20 hover:scale-105 transition-all">
+                            {language === 'pt' ? 'Garantir Vaga' : t.nav.cta}
+                        </Link>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <footer className="mt-24 text-center border-t border-white/5 pt-12 md:pt-20 px-6">
                 <p className="text-stone-600 text-[9px] uppercase tracking-[0.4em]">© 2026 Marcus Banjo • WealthSprings Accelerator</p>
@@ -140,4 +162,10 @@ const AssetsPage = () => {
     );
 };
 
-export default AssetsPage;
+export default function Assets() {
+    return (
+        <LanguageProvider>
+            <AssetsPage />
+        </LanguageProvider>
+    );
+}

@@ -11,18 +11,31 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 const EventPage = () => {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const [isRegistered, setIsRegistered] = useState(false);
-    const [activeFaq, setActiveFaq] = useState<number | null>(null);
     const [scrolled, setScrolled] = useState(false);
 
-    // Convex Content Management - Real-time updates
+    // Fetch Event Data from Convex (Primary source for event details)
+    // We try the slug, but if that fails, we fallback to the first active event
+    const eventBySlug = useQuery(api.events.getEventBySlug, { slug: "masterclass-2026" });
+    const activeEvent = useQuery(api.events.getActiveEvent);
+
+    const event = eventBySlug || activeEvent;
+
+    // Convex Content Management - Real-time updates for texts
     const remoteHero = useQuery(api.content.getContent, { key: "hero" });
     const remoteCurriculum = useQuery(api.content.getContent, { key: "curriculum" });
 
-    // Fallback logic
+    // Fallback logic for content
     const hero = remoteHero?.data || t.hero;
     const curriculum = remoteCurriculum?.data || t.curriculum;
+
+    // Fully dynamic fields from Event Management
+    const displayTitle = event?.title || hero.title_prefix;
+    const displayDescription = event?.description || hero.subtitle;
+    const displayLocation = event?.location || hero.location_val;
+    const displayDate = event?.date ? new Date(event.date + 'T12:00:00').toLocaleDateString(language === 'pt' ? 'pt-PT' : 'en-US', { day: '2-digit', month: 'long', year: 'numeric' }) : hero.date_val;
+    const displayTime = event?.time || hero.time_val;
 
     // Parallax & Scroll effect
     useEffect(() => {
@@ -94,7 +107,7 @@ const EventPage = () => {
                         </div>
 
                         <h1 className="text-fluid-3xl md:text-fluid-4xl font-medium text-white leading-[1.05] serif tracking-tight">
-                            {hero.title_prefix} <br />
+                            {displayTitle} <br />
                             <span className="italic text-gold relative">
                                 {hero.title_highlight}
                                 <svg className="absolute w-full h-3 -bottom-1 left-0 text-gold opacity-50" viewBox="0 0 100 10" preserveAspectRatio="none">
@@ -105,7 +118,7 @@ const EventPage = () => {
                         </h1>
 
                         <p className="text-lg md:text-xl text-stone-300 font-light leading-relaxed max-w-xl mx-auto lg:mx-0">
-                            {hero.subtitle}
+                            {displayDescription}
                         </p>
 
                         <div className="flex flex-col md:flex-row gap-8 items-center justify-center lg:justify-start pt-4 text-white/80">
@@ -113,25 +126,25 @@ const EventPage = () => {
                                 <i className="fa-regular fa-calendar text-gold text-2xl"></i>
                                 <div className="text-left">
                                     <p className="text-[10px] uppercase tracking-widest opacity-60">{t.hero.date_label}</p>
-                                    <p className="font-serif">{hero.date_val}</p>
+                                    <p className="font-serif">{displayDate}</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
                                 <i className="fa-regular fa-clock text-gold text-2xl"></i>
                                 <div className="text-left">
                                     <p className="text-[10px] uppercase tracking-widest opacity-60">{t.hero.time_label}</p>
-                                    <p className="font-serif">{hero.time_val}</p>
+                                    <p className="font-serif">{displayTime}</p>
                                 </div>
                             </div>
                         </div>
 
-                        <a href="https://www.google.com/maps/dir//Igreja+Crist%C3%A3+dos+Resgatados+de+Deus,+Igreja+da+Cidade,+Luanda" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-4 pt-2 text-white/80 group hover:text-white transition-colors">
+                        <div className="inline-flex items-center gap-4 pt-2 text-white/80 group hover:text-white transition-colors">
                             <i className="fa-solid fa-location-dot text-gold text-2xl"></i>
                             <div className="text-left">
                                 <p className="text-[10px] uppercase tracking-widest opacity-60">{t.hero.location_label}</p>
-                                <p className="font-serif group-hover:underline decoration-gold underline-offset-4">{hero.location_val}</p>
+                                <p className="font-serif">{displayLocation}</p>
                             </div>
-                        </a>
+                        </div>
                         <div className="pt-6"><Countdown /></div>
                     </div>
 
@@ -139,7 +152,7 @@ const EventPage = () => {
                         <div className="relative z-10">
                             <h3 className="text-2xl font-serif italic text-white mb-2">{t.register.title}</h3>
                             <p className="text-stone-400 text-xs mb-8 uppercase tracking-widest">{t.register.subtitle}</p>
-                            <RegistrationForm onSuccess={() => setIsRegistered(true)} />
+                            <RegistrationForm eventId={event?._id} onSuccess={() => setIsRegistered(true)} />
                         </div>
                     </div>
                 </div>
@@ -172,7 +185,7 @@ const EventPage = () => {
                 </div>
             </section>
 
-            {/* Rest of the sections remain static or can be dynamic later */}
+            {/* Host Section */}
             <section className="py-32 px-4 bg-stone-900 text-white relative border-y border-white/5">
                 <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-20 relative z-10">
                     <div className="w-full lg:w-1/2 relative group">
@@ -191,7 +204,7 @@ const EventPage = () => {
                 </div>
             </section>
 
-            {/* FAQ and Footer remain the same as previous version */}
+            {/* FAQ and Footer */}
             <footer className="bg-stone-950 text-stone-400 py-20 px-4 border-t border-white/5">
                 <div className="max-w-7xl mx-auto">
                     <div className="grid md:grid-cols-4 gap-16 mb-20">
