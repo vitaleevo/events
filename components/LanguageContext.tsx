@@ -12,7 +12,7 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-    const [language, setLanguage] = useState<Language>('pt'); // Default to PT as per user request context (Angola)
+    const [language, setLanguage] = useState<Language>('en'); // Default to EN as per updated user request
 
     const value = {
         language,

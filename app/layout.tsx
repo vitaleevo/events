@@ -8,8 +8,8 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
 
 export const metadata: Metadata = {
-    title: "Own Your Financial Future | Dono do Seu Futuro Financeiro",
-    description: "Exclusive Masterclass on Financial Intelligence and Wealth Creation. Masterclass Exclusiva sobre Inteligência Financeira e Criação de Riqueza.",
+    title: "WealthSprings Accelerator | Own Your Financial Future",
+    description: "Exclusive Masterclass on Financial Intelligence and Wealth Creation with Marcus Banjo.",
 };
 
 export default function RootLayout({

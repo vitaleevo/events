@@ -4,12 +4,12 @@ export type Language = 'en' | 'pt';
 export const translations = {
     en: {
         meta: {
-            title: "Own Your Financial Future | RCCG City Church",
-            description: "Free Masterclass on Financial Intelligence and Wealth Creation. Hosted by RCCG City Church Luanda.",
+            title: "Own Your Financial Future | Marcus Banjo",
+            description: "Free Masterclass on Financial Intelligence and Wealth Creation. Hosted by Marcus Banjo.",
         },
         nav: {
-            brand_first: "RCCG",
-            brand_second: "City Church",
+            brand_first: "MARCUS",
+            brand_second: "BANJO",
             cta: "Secure Spot"
         },
         hero: {
@@ -101,14 +101,14 @@ export const translations = {
         },
         host: {
             role: "Hosted By",
-            name_first: "RCCG",
-            name_last: "City Church",
+            name_first: "Marcus",
+            name_last: "Banjo",
             quote: "Empowering our community with the knowledge to build sustainable wealth and financial freedom.",
-            bio: "Join us at the City Church Auditorium for a transformative session. We believe in total prosperity - spirit, soul, and body.",
-            stat_label: "Community",
-            stat_val: "Global",
-            stat_label2: "Faith",
-            stat_val2: "Impact"
+            bio: "Marcus Banjo is a Wealth & Financial Expert dedicated to helping individuals master their finances and build lasting wealth. Join him for a transformative session.",
+            stat_label: "Expertise",
+            stat_val: "Wealth",
+            stat_label2: "Focus",
+            stat_val2: "Results"
         },
         testimonials: {
             title: "Community Voices",
@@ -176,8 +176,8 @@ export const translations = {
             link_privacy: "Privacy Policy",
             link_terms: "Terms of Use",
             col_connect: "Connect",
-            rights: "© 2026 RCCG City Church. All Rights Reserved.",
-            tagline: "Excellence in Ministry"
+            rights: "© 2026 Marcus Banjo. All Rights Reserved.",
+            tagline: "WealthSprings Accelerator"
         },
         assistant: {
             welcome: "Welcome. How can I assist you with the event details?",
@@ -189,12 +189,12 @@ export const translations = {
     },
     pt: {
         meta: {
-            title: "Dono do Seu Futuro Financeiro | RCCG City Church",
-            description: "Masterclass Gratuita sobre Inteligência Financeira e Criação de Riqueza. Organizado pela RCCG City Church Luanda.",
+            title: "Dono do Seu Futuro Financeiro | Marcus Banjo",
+            description: "Masterclass Gratuita sobre Inteligência Financeira e Criação de Riqueza. Organizado por Marcus Banjo.",
         },
         nav: {
-            brand_first: "RCCG",
-            brand_second: "City Church",
+            brand_first: "MARCUS",
+            brand_second: "BANJO",
             cta: "Garantir Vaga"
         },
         hero: {
@@ -286,14 +286,14 @@ export const translations = {
         },
         host: {
             role: "Organizado Por",
-            name_first: "RCCG",
-            name_last: "City Church",
+            name_first: "Marcus",
+            name_last: "Banjo",
             quote: "Capacitando nossa comunidade com o conhecimento para construir riqueza sustentável e liberdade financeira.",
-            bio: "Junte-se a nós no Auditório da City Church para uma sessão transformadora. Acreditamos na prosperidade total - espírito, alma e corpo.",
-            stat_label: "Comunidade",
-            stat_val: "Global",
-            stat_label2: "Fé",
-            stat_val2: "Impacto"
+            bio: "Marcus Banjo é um especialista em Riqueza e Finanças dedicado a ajudar indivíduos a dominar suas finanças e construir riqueza duradoura.",
+            stat_label: "Especialidade",
+            stat_val: "Riqueza",
+            stat_label2: "Foco",
+            stat_val2: "Resultados"
         },
         testimonials: {
             title: "Vozes da Comunidade",
