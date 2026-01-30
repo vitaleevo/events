@@ -455,7 +455,7 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
               {filteredAssets.map((asset: any) => (
                 <div key={asset._id} className="bg-white p-4 rounded-[2rem] border border-stone-100 shadow-md group relative">
                   <div className="relative aspect-video w-full rounded-[1.5rem] overflow-hidden mb-4 bg-stone-900 cursor-zoom-in" onClick={() => setSelectedAssetPreview(asset)}>
-                    <Image src={asset.fileUrl} alt={asset.title} fill className="object-cover" />
+                    <Image src={asset.fileUrl} alt={asset.title} fill unoptimized className="object-cover" />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
                       <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-stone-900"><i className="fa-solid fa-eye"></i></div>
                       <button onClick={(e) => { e.stopPropagation(); if (confirm(language === 'pt' ? "Apagar?" : "Delete?")) deleteAsset({ id: asset._id }) }} className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white"><i className="fa-solid fa-trash"></i></button>
@@ -547,7 +547,7 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl p-4 md:p-10 flex flex-col items-center justify-center">
             <button onClick={() => setSelectedAssetPreview(null)} className="absolute top-8 right-8 w-12 h-12 bg-white/10 text-white rounded-full flex items-center justify-center hover:bg-gold transition-colors"><i className="fa-solid fa-xmark"></i></button>
             <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} className="relative w-full max-w-4xl h-[80vh] rounded-2xl overflow-hidden shadow-2xl border border-white/10">
-              <Image src={selectedAssetPreview.fileUrl} alt="Preview" fill className="object-contain" priority />
+              <Image src={selectedAssetPreview.fileUrl} alt="Preview" fill unoptimized className="object-contain" priority />
             </motion.div>
           </motion.div>
         )}
