@@ -28,9 +28,11 @@ export const getEventBySlug = query({
     args: { slug: v.string() },
     handler: async (ctx, args) => {
         if (!args.slug) return null;
+        // Using filter instead of specific index temporarily to avoid "Server Error" 
+        // if index isn't ready in production
         return await ctx.db
             .query("events")
-            .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+            .filter((q) => q.eq(q.field("slug"), args.slug))
             .first();
     },
 });
