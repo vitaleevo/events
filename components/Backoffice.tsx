@@ -25,6 +25,7 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
   const assets = useQuery(api.assets.listAssets) || [];
   const heroContent = useQuery(api.content.getContent, { key: "hero" });
   const curriculumContent = useQuery(api.content.getContent, { key: "curriculum" });
+  const curriculumList = useQuery(api.curriculum.listCurriculum) || [];
 
   const createEvent = useMutation(api.events.createEvent);
   const updateEvent = useMutation(api.events.updateEvent);
@@ -32,6 +33,11 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
   const deleteRegistrant = useMutation(api.registrants.deleteRegistrant);
   const updateStatus = useMutation(api.registrants.updateRegistrantStatus);
   const deleteAsset = useMutation(api.assets.deleteAsset);
+
+  // Curriculum CRUD
+  const createModule = useMutation(api.curriculum.createModule);
+  const updateModule = useMutation(api.curriculum.updateModule);
+  const deleteModule = useMutation(api.curriculum.deleteModule);
 
   const handleDeleteRegistrant = async (id: any) => {
     if (!confirm(language === 'pt' ? "Tem certeza que deseja eliminar este candidato?" : "Are you sure you want to delete this registrant?")) return;
@@ -49,7 +55,7 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
   const convex = useConvex();
 
   // --- STATE ---
-  const [activeTab, setActiveTab] = useState<'leads' | 'content' | 'assets' | 'events'>('leads');
+  const [activeTab, setActiveTab] = useState<'leads' | 'content' | 'assets' | 'events' | 'curriculum'>('leads');
   const [selectedEventId, setSelectedEventId] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -84,6 +90,17 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
   const [heroData, setHeroData] = useState<any>(null);
   const [curriculumData, setCurriculumData] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Curriculum Form State
+  const [editingModule, setEditingModule] = useState<any | null>(null);
+  const [moduleForm, setModuleForm] = useState({ title: '', description: '', icon: 'fa-star', order: 0 });
+  const [isModuleModalOpen, setIsModuleModalOpen] = useState(false);
+
+  const icons = [
+    "fa-brain", "fa-columns", "fa-chart-line", "fa-wallet", "fa-seedling",
+    "fa-money-bill-trend-up", "fa-list-check", "fa-lightbulb", "fa-rocket",
+    "fa-shield-halved", "fa-piggy-bank", "fa-coins", "fa-landmark"
+  ];
 
   useEffect(() => {
     if (heroContent) setHeroData(heroContent.data);
@@ -257,6 +274,45 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
     }
   };
 
+  const handleSaveModule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingModule) {
+        await updateModule({
+          id: editingModule._id,
+          title: moduleForm.title,
+          description: moduleForm.description,
+          icon: moduleForm.icon,
+          order: moduleForm.order
+        });
+        alert("Module Updated");
+      } else {
+        await createModule({
+          title: moduleForm.title,
+          description: moduleForm.description,
+          icon: moduleForm.icon,
+          order: curriculumList.length + 1
+        });
+        alert("Module Created");
+      }
+      setIsModuleModalOpen(false);
+      setEditingModule(null);
+    } catch (err) {
+      alert("Error saving module");
+    }
+  };
+
+  const openModuleModal = (module: any = null) => {
+    if (module) {
+      setEditingModule(module);
+      setModuleForm({ title: module.title, description: module.description, icon: module.icon, order: module.order });
+    } else {
+      setEditingModule(null);
+      setModuleForm({ title: '', description: '', icon: 'fa-brain', order: curriculumList.length + 1 });
+    }
+    setIsModuleModalOpen(true);
+  };
+
   const filteredLeads = selectedEventId === 'all'
     ? leads
     : leads.filter((l: any) => l.eventId === selectedEventId);
@@ -306,6 +362,7 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
             <button onClick={() => setActiveTab('leads')} className={`pb-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === 'leads' ? 'text-gold border-b-2 border-gold' : 'text-stone-400 hover:text-stone-600'}`}>{t.backoffice.tab_leads}</button>
             <button onClick={() => setActiveTab('events')} className={`pb-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === 'events' ? 'text-gold border-b-2 border-gold' : 'text-stone-400 hover:text-stone-600'}`}>{t.backoffice.tab_events}</button>
             <button onClick={() => setActiveTab('assets')} className={`pb-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === 'assets' ? 'text-gold border-b-2 border-gold' : 'text-stone-400 hover:text-stone-600'}`}>{t.backoffice.tab_assets}</button>
+            <button onClick={() => setActiveTab('curriculum')} className={`pb-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === 'curriculum' ? 'text-gold border-b-2 border-gold' : 'text-stone-400 hover:text-stone-600'}`}>Curriculum</button>
             <button onClick={() => setActiveTab('content')} className={`pb-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === 'content' ? 'text-gold border-b-2 border-gold' : 'text-stone-400 hover:text-stone-600'}`}>{t.backoffice.tab_content}</button>
           </nav>
         </div>
@@ -470,9 +527,39 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
         </div>
       )}
 
+      {activeTab === 'curriculum' && (
+        <div className="animate-fade-in">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="serif italic text-2xl text-stone-800">Curriculum Modules</h2>
+            <button onClick={() => openModuleModal()} className="px-8 py-3 bg-stone-900 text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
+              {language === 'pt' ? 'Novo Módulo' : 'New Module'}
+            </button>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {curriculumList.map((item: any) => (
+              <div key={item._id} className="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-lg relative group hover:border-gold/30 transition-all">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="w-12 h-12 bg-gold/10 rounded-full flex items-center justify-center text-gold text-xl">
+                    <i className={`fa-solid ${item.icon}`}></i>
+                  </div>
+                  <span className="text-[10px] font-bold text-stone-300">#{item.order}</span>
+                </div>
+                <h3 className="font-bold text-lg text-stone-800 mb-2">{item.title}</h3>
+                <p className="text-sm text-stone-500 leading-relaxed mb-6">{item.description}</p>
+
+                <div className="flex gap-2 pt-4 border-t border-stone-50">
+                  <button onClick={() => openModuleModal(item)} className="flex-1 py-2 bg-stone-50 text-stone-600 rounded-lg text-[10px] font-bold uppercase hover:bg-stone-100">Edit</button>
+                  <button onClick={() => { if (confirm('Delete?')) deleteModule({ id: item._id }) }} className="w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all"><i className="fa-solid fa-trash"></i></button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {activeTab === 'content' && (
         <div className="grid md:grid-cols-2 gap-8 animate-fade-in">
-          <div className="bg-white p-10 rounded-[2.5rem] border border-stone-100 shadow-xl">
+          <div className="bg-white p-10 rounded-[2.5rem] border border-stone-100 shadow-xl col-span-2">
             <div className="flex justify-between items-center mb-10 border-b pb-6 border-stone-50">
               <h3 className="serif italic text-2xl">{t.backoffice.content_masterclass_title}</h3>
               <button onClick={() => handleSaveContent("hero", heroData)} disabled={isSaving} className="px-8 py-2.5 bg-gold text-white rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-gold/20">{isSaving ? "..." : t.backoffice.btn_publish_content}</button>
@@ -507,30 +594,29 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
             </div>
           </div>
 
-          <div className="bg-white p-10 rounded-[2.5rem] border border-stone-100 shadow-xl">
+          <div className="bg-white p-10 rounded-[2.5rem] border border-stone-100 shadow-xl col-span-2">
             <div className="flex justify-between items-center mb-10 border-b pb-6 border-stone-50">
-              <h3 className="serif italic text-2xl">{t.backoffice.content_curriculum_title}</h3>
+              <h3 className="serif italic text-2xl">Curriculum Copy</h3>
               <button onClick={() => handleSaveContent("curriculum", curriculumData)} disabled={isSaving} className="px-8 py-2.5 bg-stone-900 text-white rounded-full text-[10px] font-bold uppercase tracking-widest">{isSaving ? "..." : t.backoffice.btn_update_pillars}</button>
             </div>
-            <div className="space-y-6 max-h-[600px] overflow-y-auto pr-2">
-              {curriculumData?.items?.map((item: any, idx: number) => (
-                <div key={idx} className="p-6 bg-stone-50 rounded-[1.5rem] border border-stone-100 relative group">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 bg-gold/10 text-gold rounded-full flex items-center justify-center text-[10px] font-bold">0{idx + 1}</div>
-                    <input type="text" className="flex-1 bg-transparent border-none font-bold text-stone-800 text-sm focus:ring-0" value={item.title} onChange={(e) => {
-                      const newItems = [...curriculumData.items];
-                      newItems[idx].title = e.target.value;
-                      setCurriculumData({ ...curriculumData, items: newItems });
-                    }} />
-                    <i className={`fa-solid ${item.icon} text-stone-200`}></i>
-                  </div>
-                  <textarea className="w-full bg-white border border-stone-100 rounded-xl p-3 text-xs text-stone-500 h-20 outline-none focus:border-gold" value={item.description} onChange={(e) => {
-                    const newItems = [...curriculumData.items];
-                    newItems[idx].description = e.target.value;
-                    setCurriculumData({ ...curriculumData, items: newItems });
-                  }} />
-                </div>
-              ))}
+            <p className="text-stone-400 text-sm mb-6">Edit the general title and subtitle for the curriculum section here. To manage the actual modules, use the "Curriculum" tab.</p>
+            <div className="space-y-4">
+              <div>
+                <label className="text-[9px] font-bold uppercase tracking-[0.3em] text-stone-400 mb-2 block">Section Tag</label>
+                <input type="text" className="w-full p-4 bg-stone-50 border border-stone-100 rounded-xl outline-none focus:border-gold text-sm" value={curriculumData?.pill || ""} onChange={(e) => setCurriculumData({ ...curriculumData, pill: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-[9px] font-bold uppercase tracking-[0.3em] text-stone-400 mb-2 block">Title Prefix</label>
+                <input type="text" className="w-full p-4 bg-stone-50 border border-stone-100 rounded-xl outline-none focus:border-gold text-sm" value={curriculumData?.title_prefix || ""} onChange={(e) => setCurriculumData({ ...curriculumData, title_prefix: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-[9px] font-bold uppercase tracking-[0.3em] text-stone-400 mb-2 block">Title Highlight</label>
+                <input type="text" className="w-full p-4 bg-stone-50 border border-stone-100 rounded-xl outline-none focus:border-gold text-sm" value={curriculumData?.title_highlight || ""} onChange={(e) => setCurriculumData({ ...curriculumData, title_highlight: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-[9px] font-bold uppercase tracking-[0.3em] text-stone-400 mb-2 block">Subtitle</label>
+                <textarea className="w-full p-4 bg-stone-50 border border-stone-100 rounded-xl outline-none focus:border-gold text-sm h-24" value={curriculumData?.subtitle || ""} onChange={(e) => setCurriculumData({ ...curriculumData, subtitle: e.target.value })} />
+              </div>
             </div>
           </div>
         </div>
@@ -593,6 +679,47 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
                   <button type="submit" className="px-10 py-3 bg-stone-900 text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all shadow-lg shadow-stone-900/10">
                     {t.backoffice.btn_save_changes}
                   </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Module Edit Modal */}
+      <AnimatePresence>
+        {isModuleModalOpen && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-stone-900/40 backdrop-blur-sm p-4 flex items-center justify-center">
+            <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }} className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden">
+              <div className="p-6 border-b border-stone-100">
+                <h3 className="serif italic text-xl text-stone-800">{editingModule ? 'Edit Module' : 'New Module'}</h3>
+              </div>
+              <form onSubmit={handleSaveModule} className="p-8 space-y-6">
+                <div>
+                  <label className="text-[9px] font-bold uppercase tracking-widest text-stone-400 mb-2 block">Title</label>
+                  <input required className="w-full p-3 bg-stone-50 border-stone-100 rounded-xl text-sm outline-none focus:border-gold" value={moduleForm.title} onChange={(e) => setModuleForm({ ...moduleForm, title: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-[9px] font-bold uppercase tracking-widest text-stone-400 mb-2 block">Description</label>
+                  <textarea required className="w-full p-3 bg-stone-50 border-stone-100 rounded-xl text-sm outline-none focus:border-gold h-20" value={moduleForm.description} onChange={(e) => setModuleForm({ ...moduleForm, description: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-[9px] font-bold uppercase tracking-widest text-stone-400 mb-2 block">Icon</label>
+                  <div className="grid grid-cols-5 gap-2 max-h-32 overflow-y-auto p-2 bg-stone-50 rounded-xl">
+                    {icons.map(icon => (
+                      <button type="button" key={icon} onClick={() => setModuleForm({ ...moduleForm, icon })} className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${moduleForm.icon === icon ? 'bg-gold text-white shadow-lg' : 'text-stone-400 hover:bg-white hover:shadow'}`}>
+                        <i className={`fa-solid ${icon}`}></i>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[9px] font-bold uppercase tracking-widest text-stone-400 mb-2 block">Order</label>
+                  <input type="number" className="w-full p-3 bg-stone-50 border-stone-100 rounded-xl text-sm outline-none focus:border-gold" value={moduleForm.order} onChange={(e) => setModuleForm({ ...moduleForm, order: parseInt(e.target.value) })} />
+                </div>
+                <div className="flex gap-3 pt-4">
+                  <button type="button" onClick={() => setIsModuleModalOpen(false)} className="flex-1 py-3 text-stone-400 text-xs font-bold uppercase">Cancel</button>
+                  <button type="submit" className="flex-1 py-3 bg-stone-900 text-white rounded-xl text-xs font-bold uppercase shadow-lg hover:bg-gold transition-all">Save</button>
                 </div>
               </form>
             </motion.div>

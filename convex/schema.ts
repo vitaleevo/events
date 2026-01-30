@@ -39,4 +39,12 @@ export default defineSchema({
         slug: v.string(), // e.g. 'masterclass-2026'
         status: v.string(), // 'upcoming', 'ongoing', 'completed'
     }).index("by_slug", ["slug"]).index("by_open", ["isOpen"]),
+
+    curriculum: defineTable({
+        title: v.string(),
+        description: v.string(),
+        icon: v.string(),
+        order: v.number(),
+        eventId: v.optional(v.id("events")),
+    }).index("by_order", ["order"]),
 });

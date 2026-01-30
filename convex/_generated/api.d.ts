@@ -11,6 +11,7 @@
 import type * as admin from "../admin.js";
 import type * as assets from "../assets.js";
 import type * as content from "../content.js";
+import type * as curriculum from "../curriculum.js";
 import type * as events from "../events.js";
 import type * as registrants from "../registrants.js";
 
@@ -24,6 +25,7 @@ declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   assets: typeof assets;
   content: typeof content;
+  curriculum: typeof curriculum;
   events: typeof events;
   registrants: typeof registrants;
 }>;

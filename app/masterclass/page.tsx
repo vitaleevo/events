@@ -29,13 +29,22 @@ const EventPage = () => {
     const activeEvent = useQuery(api.events.getActiveEvent);
     const event = eventBySlug !== undefined ? (eventBySlug || activeEvent) : undefined;
 
-    // 2. Fetch CMS Content (Titles and Pillars)
+    // 2. Fetch CMS Content (Titles) & Curriculum Database
     const remoteHero = useQuery(api.content.getContent, { key: "hero" });
     const remoteCurriculum = useQuery(api.content.getContent, { key: "curriculum" });
+    const dbCurriculumItems = useQuery(api.curriculum.listCurriculum);
 
     // 3. Merge Logic: CMS provides the 'Style', Event provides the 'Facts'
     const hero = remoteHero?.data || t.hero;
-    const curriculum = remoteCurriculum?.data || t.curriculum;
+    const curriculumContent = remoteCurriculum?.data || t.curriculum;
+
+    // Use DB items if available, otherwise fallback to hardcoded/CMS items
+    const curriculumItems = (dbCurriculumItems && dbCurriculumItems.length > 0) ? dbCurriculumItems : (curriculumContent.items || t.curriculum.items);
+
+    // ... (rest of logic) ...
+
+    // ... inside return ...
+
 
     // THE SOURCE OF TRUTH (Always from the Event created in Backoffice)
     const displayDate = event?.date
@@ -185,20 +194,21 @@ const EventPage = () => {
             </section>
 
             {/* Curriculum Section */}
+            {/* Curriculum Section */}
             <section className="py-32 px-4 bg-stone-50 relative overflow-hidden">
                 <div className="max-w-7xl mx-auto relative z-10">
                     <div className="text-center mb-24 max-w-3xl mx-auto">
-                        <span className="text-gold text-xs font-bold tracking-[0.4em] uppercase block mb-6">{curriculum.pill}</span>
+                        <span className="text-gold text-xs font-bold tracking-[0.4em] uppercase block mb-6">{curriculumContent.pill}</span>
                         <h2 className="text-fluid-2xl md:text-fluid-3xl font-medium text-stone-900 serif leading-tight mb-6">
-                            {curriculum.title_prefix} <span className="italic text-stone-400">{curriculum.title_highlight}</span>
+                            {curriculumContent.title_prefix} <span className="italic text-stone-400">{curriculumContent.title_highlight}</span>
                         </h2>
                         <p className="text-stone-500 text-lg font-light leading-relaxed">
-                            {curriculum.subtitle}
+                            {curriculumContent.subtitle}
                         </p>
                     </div>
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {curriculum.items.map((item: any, idx: number) => (
+                        {curriculumItems.map((item: any, idx: number) => (
                             <div key={idx} className="group relative bg-white p-10 rounded-[2rem] border border-stone-100 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
                                 <div className="w-14 h-14 bg-stone-50 rounded-2xl flex items-center justify-center mb-8 text-2xl text-stone-300 group-hover:text-gold group-hover:bg-gold/10 transition-colors duration-500">
                                     <i className={`fa-solid ${item.icon}`}></i>
