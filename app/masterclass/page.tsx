@@ -143,7 +143,7 @@ const EventPage = () => {
                             <span className="text-gold font-bold tracking-[0.2em] text-[10px] uppercase">{displayTag}</span>
                         </div>
 
-                        <h1 className="text-fluid-3xl md:text-fluid-4xl font-medium text-white leading-[1.05] serif tracking-tight">
+                        <h1 className="text-3xl md:text-6xl font-medium text-white leading-[1.05] serif tracking-tight">
                             {displayTitle} <br />
                             <span className="italic text-gold relative">
                                 {hero.title_highlight}
@@ -201,7 +201,7 @@ const EventPage = () => {
                 <div className="max-w-7xl mx-auto relative z-10">
                     <div className="text-center mb-24 max-w-3xl mx-auto">
                         <span className="text-gold text-xs font-bold tracking-[0.4em] uppercase block mb-6">{curriculumContent.pill}</span>
-                        <h2 className="text-fluid-2xl md:text-fluid-3xl font-medium text-stone-900 serif leading-tight mb-6">
+                        <h2 className="text-2xl md:text-4xl font-medium text-stone-900 serif leading-tight mb-6">
                             {curriculumContent.title_prefix} <span className="italic text-stone-400">{curriculumContent.title_highlight}</span>
                         </h2>
                         <p className="text-stone-500 text-lg font-light leading-relaxed">

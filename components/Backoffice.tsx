@@ -376,70 +376,74 @@ const Backoffice: React.FC<BackofficeProps> = ({ onExit }) => {
       <div className="max-w-7xl mx-auto mb-10 md:flex justify-between items-end">
         <div>
           <h1 className="text-4xl font-serif italic text-stone-900">{t.backoffice.portal_title}</h1>
-          <nav className="flex gap-8 mt-6">
-            <button onClick={() => setActiveTab('leads')} className={`pb-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === 'leads' ? 'text-gold border-b-2 border-gold' : 'text-stone-400 hover:text-stone-600'}`}>{t.backoffice.tab_leads}</button>
-            <button onClick={() => setActiveTab('events')} className={`pb-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === 'events' ? 'text-gold border-b-2 border-gold' : 'text-stone-400 hover:text-stone-600'}`}>{t.backoffice.tab_events}</button>
-            <button onClick={() => setActiveTab('assets')} className={`pb-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === 'assets' ? 'text-gold border-b-2 border-gold' : 'text-stone-400 hover:text-stone-600'}`}>{t.backoffice.tab_assets}</button>
-            <button onClick={() => setActiveTab('curriculum')} className={`pb-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === 'curriculum' ? 'text-gold border-b-2 border-gold' : 'text-stone-400 hover:text-stone-600'}`}>Curriculum</button>
-            <button onClick={() => setActiveTab('content')} className={`pb-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === 'content' ? 'text-gold border-b-2 border-gold' : 'text-stone-400 hover:text-stone-600'}`}>{t.backoffice.tab_content}</button>
+          <nav className="flex gap-6 mt-6 overflow-x-auto whitespace-nowrap pb-2 scrollbar-hide w-full max-w-[90vw] md:max-w-none">
+            <button onClick={() => setActiveTab('leads')} className={`pb-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all flex-shrink-0 ${activeTab === 'leads' ? 'text-gold border-b-2 border-gold' : 'text-stone-400 hover:text-stone-600'}`}>{t.backoffice.tab_leads}</button>
+            <button onClick={() => setActiveTab('events')} className={`pb-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all flex-shrink-0 ${activeTab === 'events' ? 'text-gold border-b-2 border-gold' : 'text-stone-400 hover:text-stone-600'}`}>{t.backoffice.tab_events}</button>
+            <button onClick={() => setActiveTab('assets')} className={`pb-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all flex-shrink-0 ${activeTab === 'assets' ? 'text-gold border-b-2 border-gold' : 'text-stone-400 hover:text-stone-600'}`}>{t.backoffice.tab_assets}</button>
+            <button onClick={() => setActiveTab('curriculum')} className={`pb-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all flex-shrink-0 ${activeTab === 'curriculum' ? 'text-gold border-b-2 border-gold' : 'text-stone-400 hover:text-stone-600'}`}>Curriculum</button>
+            <button onClick={() => setActiveTab('content')} className={`pb-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all flex-shrink-0 ${activeTab === 'content' ? 'text-gold border-b-2 border-gold' : 'text-stone-400 hover:text-stone-600'}`}>{t.backoffice.tab_content}</button>
           </nav>
         </div>
-        <div className="flex items-center gap-4">
-          <LanguageSwitcher />
-          <select
-            className="px-6 py-3 bg-white border border-stone-200 rounded-full text-[10px] font-bold uppercase tracking-widest text-stone-500 outline-none"
-            value={selectedEventId}
-            onChange={(e) => setSelectedEventId(e.target.value)}
-          >
-            <option value="all">{t.backoffice.filter_all}</option>
-            {allEvents.map((ev: any) => (
-              <option key={ev._id} value={ev._id}>{ev.title}</option>
-            ))}
-          </select>
-          <button onClick={handleLogout} className="px-8 py-3 bg-white border border-stone-200 rounded-full text-[10px] font-bold uppercase tracking-widest text-stone-500 hover:text-red-500 hover:border-red-200 transition-all">{t.backoffice.btn_exit}</button>
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mt-6 md:mt-0">
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <LanguageSwitcher />
+            <select
+              className="flex-1 md:flex-none px-6 py-3 bg-white border border-stone-200 rounded-full text-[10px] font-bold uppercase tracking-widest text-stone-500 outline-none"
+              value={selectedEventId}
+              onChange={(e) => setSelectedEventId(e.target.value)}
+            >
+              <option value="all">{t.backoffice.filter_all}</option>
+              {allEvents.map((ev: any) => (
+                <option key={ev._id} value={ev._id}>{ev.title}</option>
+              ))}
+            </select>
+          </div>
+          <button onClick={handleLogout} className="w-full md:w-auto px-8 py-3 bg-white border border-stone-200 rounded-full text-[10px] font-bold uppercase tracking-widest text-stone-500 hover:text-red-500 hover:border-red-200 transition-all">{t.backoffice.btn_exit}</button>
         </div>
       </div>
 
       {activeTab === 'leads' && (
         <div className="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-stone-100 animate-fade-in">
-          <div className="p-8 border-b border-stone-100 flex justify-between items-center bg-stone-50/30">
+          <div className="p-8 border-b border-stone-100 flex flex-col md:flex-row gap-4 justify-between items-center bg-stone-50/30">
             <h2 className="serif italic text-xl text-stone-800">{t.backoffice.leads_title}</h2>
-            <input type="text" placeholder={t.backoffice.leads_filter_placeholder} className="px-6 py-2 bg-white rounded-full border border-stone-200 text-sm outline-none focus:ring-2 focus:ring-gold/20" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            <input type="text" placeholder={t.backoffice.leads_filter_placeholder} className="w-full md:w-auto px-6 py-2 bg-white rounded-full border border-stone-200 text-sm outline-none focus:ring-2 focus:ring-gold/20" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
           </div>
-          <table className="w-full text-left">
-            <thead className="bg-stone-50/50">
-              <tr>
-                <th className="px-8 py-4 text-[9px] uppercase tracking-widest text-stone-400">{t.backoffice.th_name}</th>
-                <th className="px-8 py-4 text-[9px] uppercase tracking-widest text-stone-400">{t.backoffice.th_contact}</th>
-                <th className="px-8 py-4 text-[9px] uppercase tracking-widest text-stone-400">{t.backoffice.th_status}</th>
-                <th className="px-8 py-4 text-[9px] uppercase tracking-widest text-stone-400 text-right">{t.backoffice.th_actions}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-50">
-              {filteredLeads.filter((l: any) => l.name.toLowerCase().includes(searchTerm.toLowerCase())).map((lead: any) => (
-                <tr key={lead._id} className="hover:bg-stone-50/40 transition-colors">
-                  <td className="px-8 py-6">
-                    <p className="text-sm font-bold text-stone-800">{lead.name}</p>
-                    <p className="text-[10px] text-stone-400">{new Date(lead.timestamp).toLocaleDateString()}</p>
-                  </td>
-                  <td className="px-8 py-6">
-                    <p className="text-xs text-stone-600 font-medium">{lead.email}</p>
-                    <p className="text-[10px] text-stone-400">{lead.phone}</p>
-                  </td>
-                  <td className="px-8 py-6">
-                    <button onClick={() => updateStatus({ id: lead._id, status: lead.status === 'Pending' ? 'Approved' : 'Pending' })} className={`px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all ${lead.status === 'Approved' ? 'bg-green-100 text-green-700' : 'bg-gold/10 text-gold hover:bg-gold/20'}`}>
-                      {lead.status === 'Approved' ? t.backoffice.status_approved : t.backoffice.status_pending}
-                    </button>
-                  </td>
-                  <td className="px-8 py-6 text-right">
-                    <button onClick={() => handleDeleteRegistrant(lead._id)} className="w-8 h-8 rounded-full flex items-center justify-center text-stone-300 hover:bg-red-50 hover:text-red-500 transition-all">
-                      <i className="fa-solid fa-trash-can text-sm"></i>
-                    </button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left min-w-[600px]">
+              <thead className="bg-stone-50/50">
+                <tr>
+                  <th className="px-8 py-4 text-[9px] uppercase tracking-widest text-stone-400">{t.backoffice.th_name}</th>
+                  <th className="px-8 py-4 text-[9px] uppercase tracking-widest text-stone-400">{t.backoffice.th_contact}</th>
+                  <th className="px-8 py-4 text-[9px] uppercase tracking-widest text-stone-400">{t.backoffice.th_status}</th>
+                  <th className="px-8 py-4 text-[9px] uppercase tracking-widest text-stone-400 text-right">{t.backoffice.th_actions}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-stone-50">
+                {filteredLeads.filter((l: any) => l.name.toLowerCase().includes(searchTerm.toLowerCase())).map((lead: any) => (
+                  <tr key={lead._id} className="hover:bg-stone-50/40 transition-colors">
+                    <td className="px-8 py-6">
+                      <p className="text-sm font-bold text-stone-800">{lead.name}</p>
+                      <p className="text-[10px] text-stone-400">{new Date(lead.timestamp).toLocaleDateString()}</p>
+                    </td>
+                    <td className="px-8 py-6">
+                      <p className="text-xs text-stone-600 font-medium">{lead.email}</p>
+                      <p className="text-[10px] text-stone-400">{lead.phone}</p>
+                    </td>
+                    <td className="px-8 py-6">
+                      <button onClick={() => updateStatus({ id: lead._id, status: lead.status === 'Pending' ? 'Approved' : 'Pending' })} className={`px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all ${lead.status === 'Approved' ? 'bg-green-100 text-green-700' : 'bg-gold/10 text-gold hover:bg-gold/20'}`}>
+                        {lead.status === 'Approved' ? t.backoffice.status_approved : t.backoffice.status_pending}
+                      </button>
+                    </td>
+                    <td className="px-8 py-6 text-right">
+                      <button onClick={() => handleDeleteRegistrant(lead._id)} className="w-8 h-8 rounded-full flex items-center justify-center text-stone-300 hover:bg-red-50 hover:text-red-500 transition-all">
+                        <i className="fa-solid fa-trash-can text-sm"></i>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
