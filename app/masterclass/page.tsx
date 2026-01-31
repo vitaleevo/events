@@ -33,6 +33,8 @@ const EventPage = () => {
     const remoteHero = useQuery(api.content.getContent, { key: "hero" });
     const remoteCurriculum = useQuery(api.content.getContent, { key: "curriculum" });
     const dbCurriculumItems = useQuery(api.curriculum.listCurriculum);
+    const allAssets = useQuery(api.assets.listAssets) || [];
+    const allEvents = useQuery(api.events.listEvents) || [];
 
     // 3. Merge Logic: CMS provides the 'Style', Event provides the 'Facts'
     const hero = remoteHero?.data || t.hero;
@@ -217,6 +219,85 @@ const EventPage = () => {
                                 <p className="text-stone-500 font-light leading-relaxed text-sm">{item.description}</p>
                             </div>
                         ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Events & Gallery Section */}
+            <section className="py-32 px-4 bg-stone-900 border-y border-white/5 relative overflow-hidden">
+                {/* Background Elements */}
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gold/5 rounded-full blur-[120px] pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-stone-800/50 rounded-full blur-[100px] pointer-events-none"></div>
+
+                <div className="max-w-7xl mx-auto relative z-10">
+                    <div className="text-center mb-20 animate-fade-in">
+                        <span className="text-gold text-xs font-bold tracking-[0.4em] uppercase block mb-6">{language === 'pt' ? 'Explore Mais' : 'Explore More'}</span>
+                        <h2 className="text-4xl md:text-5xl font-medium text-white serif italic mb-6">{language === 'pt' ? 'Próximos Eventos & Galeria' : 'Upcoming Events & Gallery'}</h2>
+                        <p className="text-stone-400 font-light text-lg max-w-2xl mx-auto">{language === 'pt' ? 'Fique a par de todas as datas e veja os melhores momentos.' : 'Stay updated with our schedule and check out the highlights.'}</p>
+                    </div>
+
+                    <div className="grid lg:grid-cols-12 gap-12">
+                        {/* Upcoming Events List */}
+                        <div className="lg:col-span-5 space-y-8">
+                            <div className="flex items-center gap-4 mb-4">
+                                <span className="w-12 h-[1px] bg-gold"></span>
+                                <h3 className="text-white text-sm font-bold uppercase tracking-widest">{language === 'pt' ? 'Calendário' : 'Calendar'}</h3>
+                            </div>
+
+                            <div className="space-y-4">
+                                {allEvents
+                                    .filter((e: any) => e.status !== 'completed')
+                                    .slice(0, 3)
+                                    .map((evt: any) => (
+                                        <div key={evt._id} className="group p-8 rounded-[2rem] bg-stone-800/50 border border-white/5 hover:border-gold/30 hover:bg-stone-800 transition-all cursor-default">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div>
+                                                    <h4 className="text-xl font-bold text-white group-hover:text-gold transition-colors">{evt.title}</h4>
+                                                    <p className="text-stone-500 text-xs mt-1 uppercase tracking-wider">{evt.location}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-gold font-serif text-2xl italic">{new Date(evt.date).getDate()}</p>
+                                                    <p className="text-stone-500 text-[10px] font-bold uppercase tracking-widest">{new Date(evt.date).toLocaleString(language === 'pt' ? 'pt-PT' : 'en-US', { month: 'short' }).toUpperCase()}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3 text-sm text-stone-400">
+                                                <i className="fa-regular fa-clock text-gold/60"></i>
+                                                <span>{evt.time}</span>
+                                                <span className="w-1 h-1 bg-stone-600 rounded-full"></span>
+                                                <span className={evt.isOpen ? "text-green-400" : "text-red-400"}>{evt.isOpen ? (language === 'pt' ? 'Aberto' : 'Open') : (language === 'pt' ? 'Fechado' : 'Closed')}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                {allEvents.length === 0 && (
+                                    <p className="text-stone-500 italic text-sm">{language === 'pt' ? 'Sem eventos agendados.' : 'No upcoming events.'}</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Gallery Grid */}
+                        <div className="lg:col-span-7">
+                            <div className="flex items-center gap-4 mb-8">
+                                <span className="w-12 h-[1px] bg-gold"></span>
+                                <h3 className="text-white text-sm font-bold uppercase tracking-widest">Flyers & Highlights</h3>
+                            </div>
+
+                            <div className="grid md:grid-cols-2 gap-4">
+                                {allAssets.slice(0, 4).map((asset: any) => (
+                                    <div key={asset._id} className="relative aspect-[4/5] rounded-[1.5rem] overflow-hidden group border border-white/5">
+                                        <Image src={asset.fileUrl} alt={asset.title} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-stone-900/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                                            <p className="text-gold text-[10px] font-bold uppercase tracking-widest mb-1">{language === 'pt' ? 'Flyer' : 'Flyer'}</p>
+                                            <p className="text-white font-serif italic text-lg">{asset.title}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            {allAssets.length === 0 && (
+                                <div className="h-64 flex items-center justify-center border border-dashed border-white/10 rounded-[2rem] text-stone-600 text-sm">
+                                    {language === 'pt' ? 'Galeria vazia.' : 'Gallery empty.'}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </section>
