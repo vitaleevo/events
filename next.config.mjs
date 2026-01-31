@@ -13,6 +13,10 @@ const nextConfig = {
             {
                 protocol: 'https',
                 hostname: 'dashing-bobcat-713.convex.cloud',
+            },
+            {
+                protocol: 'https',
+                hostname: 'agile-snake-516.convex.cloud',
             }
         ]
     },

@@ -104,7 +104,7 @@ const AssetsPage = () => {
                 <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
                     {displayAssets.map((asset: any, idx) => (
                         <motion.div key={idx} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * idx }} className="group">
-                            <div onClick={() => { setSelectedImage(asset); handleDownload(asset); }} className="relative aspect-[3/4] w-full rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-stone-900 mb-4 cursor-zoom-in active:scale-95 transition-transform duration-300">
+                            <div onClick={() => { setSelectedImage(asset); }} className="relative aspect-[3/4] w-full rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-stone-900 mb-4 cursor-zoom-in active:scale-95 transition-transform duration-300">
                                 <Image
                                     src={asset.fileUrl}
                                     alt={asset.title}
